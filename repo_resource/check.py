@@ -21,7 +21,9 @@ import os
 import sys
 import hashlib
 from pathlib import Path
+import tempfile
 import warnings
+import ssh_agent_setup
 
 from contextlib import redirect_stdout
 
@@ -44,6 +46,25 @@ def sha256sum_from_file(file_location: str) -> str:
     return sha256.hexdigest()
 
 
+def add_private_key_to_agent(private_key: str):
+    tmp = tempfile.mkstemp(text=True)
+    fd = tmp[0]
+    keypath = tmp[1]
+
+    try:
+        os.write(fd, private_key.encode())
+        os.close(fd)
+        ssh_agent_setup.setup()
+        ssh_agent_setup.add_key(keypath)
+    # keys can be invalid, so make sure to throw
+    # in that case
+    except Exception as e:
+        raise e
+    finally:
+        # always delete the key from the container
+        os.unlink(keypath)
+
+
 def check(instream) -> list:
     """Checks a json formatted IOstream for new versions
 
@@ -60,6 +81,10 @@ def check(instream) -> list:
     url = payload['source']['url']
     revision = payload['source'].get('revision', 'HEAD')
     name = payload['source'].get('name', 'default.xml')
+    private_key = payload['source'].get('private_key', None)
+
+    if private_key != None:
+        add_private_key_to_agent(private_key)
 
     # move to CACHEDIR for all repo operations
     initial_path = Path('.').absolute()

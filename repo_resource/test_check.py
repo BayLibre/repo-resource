@@ -29,6 +29,13 @@ class TestCheck(unittest.TestCase):
                 'name': 'aosp_device_fixed.xml'
             }
         }
+        self.demo_ssh_manifests_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'baylibre_ssh_project.xml',
+            }
+        }
 
     def tearDown(self):
         p = Path(check.CACHEDIR)
@@ -152,6 +159,20 @@ class TestCheck(unittest.TestCase):
         expected_sha256sum = 'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
         newest_sha256sum = versions[-1]['sha256']
         self.assertEqual(newest_sha256sum, expected_sha256sum)
+
+
+    @unittest.skipUnless(Path('development/ssh/test_key').exists(),
+                     "requires ssh test key")
+    def test_ssh_private_key(self):
+        data = self.demo_ssh_manifests_source
+
+        private_test_key = Path('development/ssh/test_key')
+        data['source']['private_key'] = private_test_key.read_text()
+
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+        # we passed no version as input, so we should just get current version
+        self.assertEqual(len(versions), 1)
 
 
 if __name__ == '__main__':

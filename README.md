@@ -10,6 +10,18 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 
 * `name`: *Optional.* initial manifest file.
 
+* `private_key`: *Optional.* Private key to use when pulling/pushing.
+    Note that keys requiring a passphrase are un-supported.
+    Example:
+
+    ```yaml
+    private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAtCS10/f7W7lkQaSgD/mVeaSOvSF9ql4hf/zfMwfVGgHWjj+W
+      <Lots more text>
+      DWiJL+OFeg9kawcUL6hQ8JeXPhlImG6RTUffma9+iGQyyBMCGd1l
+      -----END RSA PRIVATE KEY-----
+    ```
 
 ### Example
 
