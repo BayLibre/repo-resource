@@ -6,9 +6,9 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 
 * `url`: *Required.* manifest repository location.
 
-* `revision`: manifest branch or revision (use `HEAD` for default).
+* `revision`: *Optional.* manifest branch or revision (use `HEAD` for default).
 
-* `name`: initial manifest file.
+* `name`: *Optional.* initial manifest file.
 
 
 ### Example
