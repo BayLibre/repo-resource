@@ -111,10 +111,11 @@ def check(instream) -> list:
         with redirect_stdout(sys.stderr):
             repo._Main([
                 '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
-                revision, '--manifest-name', name
+                revision, '--manifest-name', name, '--depth=1', '--no-tags'
             ])
 
-            repo._Main(['--no-pager', 'sync'])
+            repo._Main(['--no-pager', 'sync', '--verbose', '--current-branch',
+                        '--detach', '--no-tags', '--fail-fast'])
 
             # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
             # snapshot into memory because repo._Main() seems to close
