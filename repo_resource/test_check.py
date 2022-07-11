@@ -106,7 +106,7 @@ class TestCheck(unittest.TestCase):
         unreachable_projects_data['source']['name'] = 'unreachable_project.xml'
 
         instream = StringIO(json.dumps(unreachable_projects_data))
-        with self.assertRaises(repo.error.GitError):
+        with self.assertRaises(SystemExit):
             check.check(instream)
 
     def test_first_revision(self):
