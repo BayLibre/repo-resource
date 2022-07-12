@@ -19,7 +19,6 @@ Concourse as a "version"
 import json
 import os
 import sys
-import hashlib
 from pathlib import Path
 import tempfile
 import warnings
@@ -30,20 +29,6 @@ from contextlib import redirect_stdout
 from repo import main as repo
 
 from repo_resource import common
-
-
-def sha256sum_from_file(file_location: str) -> str:
-    sha256 = hashlib.sha256()
-    buf_sz = 65536
-
-    with open(file_location, 'rb') as content:
-        while True:
-            data = content.read(buf_sz)
-            if not data:
-                break
-            sha256.update(data)
-
-    return sha256.hexdigest()
 
 
 def add_private_key_to_agent(private_key: str):
@@ -139,7 +124,7 @@ def check(instream) -> list:
         repo_sync()
         repo_manifest_out('manifest_snapshot.xml')
 
-        sha256 = sha256sum_from_file('manifest_snapshot.xml')
+        sha256 = common.sha256sum_from_file('manifest_snapshot.xml')
         new_version = {'sha256': sha256}
 
         versions = payload.get('versions', [])
