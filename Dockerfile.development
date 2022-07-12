@@ -3,4 +3,4 @@ FROM repo-resource:latest
 # unit/smoke testing
 COPY repo_resource /root/repo_resource
 WORKDIR /root/
-CMD python -m unittest repo_resource/test_*.py
+CMD python -m unittest
