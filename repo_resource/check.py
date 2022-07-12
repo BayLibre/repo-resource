@@ -65,6 +65,36 @@ def add_private_key_to_agent(private_key: str):
         os.unlink(keypath)
 
 
+def repo_init(url, revision='HEAD', name='default.xml'):
+    # Google's repo prints a lot of information to stdout.
+    # Concourse expects every logs to be emitted to stderr:
+    # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
+    with redirect_stdout(sys.stderr):
+        repo._Main([
+            '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
+            revision, '--manifest-name', name, '--depth=1', '--no-tags'
+        ])
+
+
+def repo_sync():
+    with redirect_stdout(sys.stderr):
+        repo._Main([
+            '--no-pager', 'sync', '--verbose', '--current-branch', '--detach',
+            '--no-tags', '--fail-fast'
+        ])
+
+
+def repo_manifest_out(filename):
+    # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
+    # snapshot into memory because repo._Main() seems to close
+    # the StringIO immediately after being called
+    with redirect_stdout(sys.stderr):
+        repo._Main([
+            '--no-pager', 'manifest', '--revision-as-HEAD', '--output-file',
+            filename
+        ])
+
+
 def check(instream) -> list:
     """Checks a json formatted IOstream for new versions
 
@@ -105,25 +135,9 @@ def check(instream) -> list:
                                 category=DeprecationWarning,
                                 module='repo')
 
-        # Google's repo prints a lot of information to stdout.
-        # Concourse expects every logs to be emitted to stderr:
-        # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
-        with redirect_stdout(sys.stderr):
-            repo._Main([
-                '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
-                revision, '--manifest-name', name, '--depth=1', '--no-tags'
-            ])
-
-            repo._Main(['--no-pager', 'sync', '--verbose', '--current-branch',
-                        '--detach', '--no-tags', '--fail-fast'])
-
-            # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
-            # snapshot into memory because repo._Main() seems to close
-            # the StringIO immediately after being called
-            repo._Main([
-                '--no-pager', 'manifest', '--revision-as-HEAD', '--output-file',
-                'manifest_snapshot.xml'
-            ])
+        repo_init(url, revision, name)
+        repo_sync()
+        repo_manifest_out('manifest_snapshot.xml')
 
         sha256 = sha256sum_from_file('manifest_snapshot.xml')
         new_version = {'sha256': sha256}
