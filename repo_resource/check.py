@@ -62,46 +62,55 @@ def check(instream) -> list:
     name = payload['source'].get('name', 'default.xml')
 
     # move to CACHEDIR for all repo operations
-    cache = Path(CACHEDIR)
-    cache.mkdir(exist_ok=True)
-    os.chdir(cache)
+    initial_path = Path('.').absolute()
 
-    # disable all terminal prompting
-    # check is called from CI/automated systems so we should never
-    # be "interactive"
-    os.environ['GIT_TERMINAL_PROMPT'] = '0'
+    try:
+        cache = Path(CACHEDIR)
+        cache.mkdir(exist_ok=True)
+        os.chdir(cache)
 
-    # gitrepo from https://github.com/grouperenault/gitrepo
-    # is not python3.10 compatible, so ignore warnings
-    warnings.filterwarnings('ignore',
-                            category=DeprecationWarning,
-                            module='repo')
+        # disable all terminal prompting
+        # check is called from CI/automated systems so we should never
+        # be "interactive"
+        os.environ['GIT_TERMINAL_PROMPT'] = '0'
 
-    # Google's repo prints a lot of information to stdout.
-    # Concourse expects every logs to be emitted to stderr:
-    # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
-    with redirect_stdout(sys.stderr):
-        repo._Main([
-            '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
-            revision, '--manifest-name', name
-        ])
+        # gitrepo from https://github.com/grouperenault/gitrepo
+        # is not python3.10 compatible, so ignore warnings
+        warnings.filterwarnings('ignore',
+                                category=DeprecationWarning,
+                                module='repo')
 
-        repo._Main(['--no-pager', 'sync'])
+        # Google's repo prints a lot of information to stdout.
+        # Concourse expects every logs to be emitted to stderr:
+        # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
+        with redirect_stdout(sys.stderr):
+            repo._Main([
+                '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
+                revision, '--manifest-name', name
+            ])
 
-        # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
-        # snapshot into memory because repo._Main() seems to close
-        # the StringIO immediately after being called
-        repo._Main([
-            '--no-pager', 'manifest', '--revision-as-HEAD', '--output-file',
-            'manifest_snapshot.xml'
-        ])
+            repo._Main(['--no-pager', 'sync'])
 
-    sha256 = sha256sum_from_file('manifest_snapshot.xml')
-    new_version = {'sha256': sha256}
+            # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
+            # snapshot into memory because repo._Main() seems to close
+            # the StringIO immediately after being called
+            repo._Main([
+                '--no-pager', 'manifest', '--revision-as-HEAD', '--output-file',
+                'manifest_snapshot.xml'
+            ])
 
-    versions = payload.get('versions', [])
-    if versions.count(new_version) == 0:
-        versions.append(new_version)
+        sha256 = sha256sum_from_file('manifest_snapshot.xml')
+        new_version = {'sha256': sha256}
+
+        versions = payload.get('versions', [])
+        if versions.count(new_version) == 0:
+            versions.append(new_version)
+
+    except Exception as e:
+        raise(e)
+
+    finally:
+        os.chdir(initial_path)
 
     return versions
 
