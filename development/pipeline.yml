@@ -24,6 +24,8 @@ jobs:
         type: registry-image
         source:
           repository: busybox
+      inputs:
+        - name: aosp-tools
       run:
-        path: echo
-        args: ["Hello world!"]
+        path: ls
+        args: ["-al", 'aosp-tools']
