@@ -116,6 +116,17 @@ def check(instream) -> list:
     if private_key is not None:
         add_private_key_to_agent(private_key)
 
+    # disable all terminal prompting
+    # check is called from CI/automated systems so we should never
+    # be "interactive"
+    os.environ['GIT_TERMINAL_PROMPT'] = '0'
+
+    # gitrepo from https://github.com/grouperenault/gitrepo
+    # is not python3.10 compatible, so ignore warnings
+    warnings.filterwarnings('ignore',
+                            category=DeprecationWarning,
+                            module='repo')
+
     # move to CACHEDIR for all repo operations
     initial_path = Path('.').absolute()
 
@@ -123,17 +134,6 @@ def check(instream) -> list:
         cache = Path(CACHEDIR)
         cache.mkdir(exist_ok=True)
         os.chdir(cache)
-
-        # disable all terminal prompting
-        # check is called from CI/automated systems so we should never
-        # be "interactive"
-        os.environ['GIT_TERMINAL_PROMPT'] = '0'
-
-        # gitrepo from https://github.com/grouperenault/gitrepo
-        # is not python3.10 compatible, so ignore warnings
-        warnings.filterwarnings('ignore',
-                                category=DeprecationWarning,
-                                module='repo')
 
         repo_init(url, revision, name)
         repo_sync()
