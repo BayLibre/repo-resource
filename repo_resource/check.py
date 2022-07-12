@@ -29,7 +29,7 @@ from contextlib import redirect_stdout
 
 from repo import main as repo
 
-CACHEDIR = '/tmp/repo-resource-cache'
+from repo_resource import common
 
 
 def sha256sum_from_file(file_location: str) -> str:
@@ -131,7 +131,7 @@ def check(instream) -> list:
     initial_path = Path('.').absolute()
 
     try:
-        cache = Path(CACHEDIR)
+        cache = Path(common.CACHEDIR)
         cache.mkdir(exist_ok=True)
         os.chdir(cache)
 

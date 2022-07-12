@@ -10,4 +10,5 @@ RUN pip install -r opt/resource/requirements.txt
 COPY repo_resource/check.py /opt/resource/check
 COPY repo_resource/in_.py /opt/resource/in
 COPY repo_resource/out.py /opt/resource/out
+COPY repo_resource/common.py /opt/resource/repo_resource/common.py
 RUN chmod +x /opt/resource/*

@@ -12,6 +12,7 @@ import shutil
 import repo
 
 from . import check
+from . import common
 
 
 class TestCheck(unittest.TestCase):
@@ -38,7 +39,7 @@ class TestCheck(unittest.TestCase):
         }
 
     def tearDown(self):
-        p = Path(check.CACHEDIR)
+        p = Path(common.CACHEDIR)
         if p.exists():
             shutil.rmtree(p)
 
@@ -101,7 +102,7 @@ class TestCheck(unittest.TestCase):
         check.check(instream)
         # no assert/assumption to call. repo init and sync should
         # just be called. maybe we can check for a file as well
-        readme = Path(check.CACHEDIR) / 'fetch_artifact' / 'README.md'
+        readme = Path(common.CACHEDIR) / 'fetch_artifact' / 'README.md'
         self.assertTrue(readme.exists())
 
     # so here, we init from a public manifest
