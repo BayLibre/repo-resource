@@ -162,8 +162,8 @@ class TestCheck(unittest.TestCase):
         newest_sha256sum = versions[-1]['sha256']
         self.assertEqual(newest_sha256sum, expected_sha256sum)
 
-    @unittest.skipUnless(Path('development/ssh/test_key').exists(),
-                         "requires ssh test key")
+    @unittest.skipUnless(
+        Path('development/ssh/test_key').exists(), "requires ssh test key")
     def test_ssh_private_key(self):
         data = self.demo_ssh_manifests_source
 

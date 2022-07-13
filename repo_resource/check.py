@@ -147,7 +147,7 @@ def check(instream) -> list:
             versions.append(new_version)
 
     except Exception as e:
-        raise(e)
+        raise (e)
 
     finally:
         os.chdir(initial_path)
