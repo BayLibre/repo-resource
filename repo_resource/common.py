@@ -9,15 +9,36 @@ Common functions for Android repo resource
 import hashlib
 import os
 import sys
+import tempfile
 import warnings
 
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import NamedTuple
 
+import ssh_agent_setup
 from repo import main as repo
 
 CACHEDIR = Path('/tmp/repo-resource-cache')
+
+
+def add_private_key_to_agent(private_key: str):
+    tmp = tempfile.mkstemp(text=True)
+    fd = tmp[0]
+    keypath = tmp[1]
+
+    try:
+        os.write(fd, private_key.encode())
+        os.close(fd)
+        ssh_agent_setup.setup()
+        ssh_agent_setup.add_key(keypath)
+    # keys can be invalid, so make sure to throw
+    # in that case
+    except Exception as e:
+        raise e
+    finally:
+        # always delete the key from the container
+        os.unlink(keypath)
 
 
 def sha256sum_from_file(file_location: str) -> str:

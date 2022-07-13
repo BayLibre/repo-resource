@@ -17,31 +17,9 @@ Concourse as a "version"
 """
 
 import json
-import os
 import sys
-import tempfile
-import ssh_agent_setup
 
 from repo_resource import common
-
-
-def add_private_key_to_agent(private_key: str):
-    tmp = tempfile.mkstemp(text=True)
-    fd = tmp[0]
-    keypath = tmp[1]
-
-    try:
-        os.write(fd, private_key.encode())
-        os.close(fd)
-        ssh_agent_setup.setup()
-        ssh_agent_setup.add_key(keypath)
-    # keys can be invalid, so make sure to throw
-    # in that case
-    except Exception as e:
-        raise e
-    finally:
-        # always delete the key from the container
-        os.unlink(keypath)
 
 
 def check(instream) -> list:
@@ -59,7 +37,7 @@ def check(instream) -> list:
     config = common.source_config_from_payload(payload)
 
     if config.private_key is not None:
-        add_private_key_to_agent(config.private_key)
+        common.add_private_key_to_agent(config.private_key)
 
     repo = common.Repo()
 
