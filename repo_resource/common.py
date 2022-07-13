@@ -43,7 +43,7 @@ def add_private_key_to_agent(private_key: str):
         os.unlink(keypath)
 
 
-def sha256sum_from_file(file_location: str) -> str:
+def version_from_file(file_location: str) -> str:
     sha256 = hashlib.sha256()
     buf_sz = 65536
 

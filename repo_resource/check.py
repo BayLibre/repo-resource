@@ -10,10 +10,7 @@ This is done in a couple of steps
 1. Repo init the manifest
 2. Repo sync it
 3. Generate a manifest snapshot
-4. Compute the sha256sum of that snapshot
-
-The sha256sum is the "manifest revision" which is passed to
-Concourse as a "version"
+4. Compute the version of that snapshot
 """
 
 import json
@@ -45,8 +42,8 @@ def check(instream) -> list:
     repo.sync()
     repo.manifest_out('manifest_snapshot.xml')
 
-    sha256 = common.sha256sum_from_file('manifest_snapshot.xml')
-    new_version = {'sha256': sha256}
+    version = common.version_from_file('manifest_snapshot.xml')
+    new_version = {'sha256': version}
 
     versions = payload.get('versions', [])
     if versions.count(new_version) == 0:
