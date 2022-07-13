@@ -6,7 +6,6 @@
 """
 Common functions for Android repo resource
 """
-import hashlib
 import os
 import sys
 import tempfile
@@ -44,17 +43,11 @@ def add_private_key_to_agent(private_key: str):
 
 
 def version_from_file(file_location: str) -> str:
-    sha256 = hashlib.sha256()
-    buf_sz = 65536
+    data = None
+    with open(file_location) as content:
+        data = content.read()
 
-    with open(file_location, 'rb') as content:
-        while True:
-            data = content.read(buf_sz)
-            if not data:
-                break
-            sha256.update(data)
-
-    return sha256.hexdigest()
+    return data
 
 
 class SourceConfiguration(NamedTuple):

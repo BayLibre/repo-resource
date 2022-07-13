@@ -128,7 +128,7 @@ class TestCheck(unittest.TestCase):
         data = self.demo_manifests_source
         data['versions'] = [{
             'version':
-            'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
+            '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n  <remote name="aosp" fetch="https://android.googlesource.com/"/>\n  \n  <default remote="aosp" revision="refs/tags/android-12.0.0_r32"/>\n  \n  <project name="device/generic/common" revision="033d50e2298811d81de7db8cdea63e349a96c9ba" upstream="refs/tags/android-12.0.0_r32" dest-branch="refs/tags/android-12.0.0_r32" groups="pdk"/>\n</manifest>\n'  # noqa: E501
         }]
         instream = StringIO(json.dumps(data))
         versions = check.check(instream)
@@ -145,8 +145,7 @@ class TestCheck(unittest.TestCase):
         # we passed no version as input, so we should just get current version
         self.assertEqual(len(versions), 1)
         # and we know that version
-        expected_version = \
-            'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
+        expected_version = '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n  <remote name="aosp" fetch="https://android.googlesource.com/"/>\n  \n  <default remote="aosp" revision="refs/tags/android-12.0.0_r32"/>\n  \n  <project name="device/generic/common" revision="033d50e2298811d81de7db8cdea63e349a96c9ba" upstream="refs/tags/android-12.0.0_r32" dest-branch="refs/tags/android-12.0.0_r32" groups="pdk"/>\n</manifest>\n'  # noqa: E501
         version = versions[0]['version']
         self.assertEqual(version, expected_version)
 
@@ -158,8 +157,7 @@ class TestCheck(unittest.TestCase):
         instream = StringIO(json.dumps(data))
         versions = check.check(instream)
         self.assertEqual(len(versions), 2)
-        expected_version = \
-            'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
+        expected_version = '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n  <remote name="aosp" fetch="https://android.googlesource.com/"/>\n  \n  <default remote="aosp" revision="refs/tags/android-12.0.0_r32"/>\n  \n  <project name="device/generic/common" revision="033d50e2298811d81de7db8cdea63e349a96c9ba" upstream="refs/tags/android-12.0.0_r32" dest-branch="refs/tags/android-12.0.0_r32" groups="pdk"/>\n</manifest>\n'  # noqa: E501
         newest_version = versions[-1]['version']
         self.assertEqual(newest_version, expected_version)
 
