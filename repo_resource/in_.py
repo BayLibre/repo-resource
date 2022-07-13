@@ -22,9 +22,9 @@ def in_(instream, dest_dir='.'):
     make it upstream, intended to be shown on the build's page.
     """
     payload = json.load(instream)
-    version = payload['version']['sha256']
+    version = payload['version']['version']
 
-    return {"version": {"sha256": version}}
+    return {"version": {"version": version}}
 
 
 def main():

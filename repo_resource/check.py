@@ -43,7 +43,7 @@ def check(instream) -> list:
     repo.manifest_out('manifest_snapshot.xml')
 
     version = common.version_from_file('manifest_snapshot.xml')
-    new_version = {'sha256': version}
+    new_version = {'version': version}
 
     versions = payload.get('versions', [])
     if versions.count(new_version) == 0:
