@@ -60,13 +60,10 @@ make push
 
 ### Unit testing
 
-Use `tox` for running the unit tests:
+Use `make test` for running the unit(integration) tests:
 ```
-tox
+make test
 ```
-See the [tox wiki](https://tox.wiki/en/latest/) for more details
-
-Note that it's also possible to run them without `tox` using `make test`
 
 ### Local concourse instance and docker registry.
 
