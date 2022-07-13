@@ -92,14 +92,10 @@ def check(instream) -> list:
     if payload['source'].get('url') is None:
         raise RuntimeError('manifest url is mandatory')
 
-    # validate payload inputs
-    url = payload['source']['url']
-    revision = payload['source'].get('revision', 'HEAD')
-    name = payload['source'].get('name', 'default.xml')
-    private_key = payload['source'].get('private_key', None)
+    config = common.source_config_from_payload(payload)
 
-    if private_key is not None:
-        add_private_key_to_agent(private_key)
+    if config.private_key is not None:
+        add_private_key_to_agent(config.private_key)
 
     # disable all terminal prompting
     # check is called from CI/automated systems so we should never
@@ -120,7 +116,7 @@ def check(instream) -> list:
         cache.mkdir(exist_ok=True)
         os.chdir(cache)
 
-        repo_init(url, revision, name)
+        repo_init(config.url, config.revision, config.name)
         repo_sync()
         repo_manifest_out('manifest_snapshot.xml')
 
