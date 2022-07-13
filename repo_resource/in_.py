@@ -7,6 +7,10 @@
 import json
 import sys
 
+from pathlib import Path
+
+from repo_resource import common
+
 
 def in_(instream, dest_dir='.'):
     """Fetch the resource and place it in dest_dir
@@ -22,9 +26,26 @@ def in_(instream, dest_dir='.'):
     make it upstream, intended to be shown on the build's page.
     """
     payload = json.load(instream)
-    version = payload['version']['version']
 
-    return {"version": {"version": version}}
+    if payload['version'].get('version') is None:
+        raise RuntimeError('Did not receive any version')
+
+    config = common.source_config_from_payload(payload)
+    requested_version = common.Version(payload['version']['version'])
+
+    if config.private_key is not None:
+        common.add_private_key_to_agent(config.private_key)
+
+    repo = common.Repo(workdir=Path(dest_dir))
+
+    repo.init(config.url, config.revision, config.name)
+    repo.sync(requested_version)
+    fetched_version = repo.currentVersion()
+
+    if fetched_version != requested_version:
+        raise RuntimeError('Could not fetch requested version')
+
+    return {"version": {"version": str(fetched_version)}}
 
 
 def main():

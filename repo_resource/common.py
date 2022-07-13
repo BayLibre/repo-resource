@@ -140,14 +140,26 @@ class Repo:
         finally:
             self.__restore_oldpwd()
 
-    def sync(self):
+    def sync(self, version: Version = None):
         self.__change_to_workdir()
         try:
             with redirect_stdout(sys.stderr):
-                repo._Main([
-                    '--no-pager', 'sync', '--verbose', '--current-branch',
-                    '--detach', '--no-tags', '--fail-fast'
-                ])
+                if version is None:
+                    repo._Main([
+                        '--no-pager', 'sync', '--verbose',
+                        '--current-branch', '--detach', '--no-tags',
+                        '--fail-fast'
+                    ])
+                else:
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tmp_manifest = os.path.join(tmpdir, 'manifest_tmp')
+                        version.to_file(tmp_manifest)
+                        repo._Main([
+                            '--no-pager', 'sync', '--verbose',
+                            '--current-branch', '--detach', '--no-tags',
+                            '--fail-fast', '--manifest-name',
+                            tmp_manifest
+                        ])
         except Exception as e:
             raise (e)
         finally:
