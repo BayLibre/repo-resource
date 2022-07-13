@@ -153,7 +153,15 @@ class Repo:
         finally:
             self.__restore_oldpwd()
 
-    def manifest_out(self, filename):
+    def currentVersion(self) -> Version:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_manifest = os.path.join(tmpdir, 'manifest_snapshot')
+            self.__manifest_out(tmp_manifest)
+            version = Version.from_file(tmp_manifest)
+
+        return version
+
+    def __manifest_out(self, filename):
         self.__change_to_workdir()
         try:
             # XXX: We can't use redirect_stdout(StringIO) to keep the manifest

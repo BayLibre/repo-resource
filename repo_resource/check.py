@@ -40,10 +40,9 @@ def check(instream) -> list:
 
     repo.init(config.url, config.revision, config.name)
     repo.sync()
-    repo.manifest_out('manifest_snapshot.xml')
+    version = repo.currentVersion()
 
-    version = str(common.Version.from_file('manifest_snapshot.xml'))
-    new_version = {'version': version}
+    new_version = {'version': str(version)}
 
     versions = payload.get('versions', [])
     if versions.count(new_version) == 0:
