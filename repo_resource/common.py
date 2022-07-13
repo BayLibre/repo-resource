@@ -42,14 +42,6 @@ def add_private_key_to_agent(private_key: str):
         os.unlink(keypath)
 
 
-def version_from_file(file_location: str) -> str:
-    data = None
-    with open(file_location) as content:
-        data = content.read()
-
-    return data
-
-
 class SourceConfiguration(NamedTuple):
     """
     Supported source configuration items when configuring
@@ -68,6 +60,37 @@ def source_config_from_payload(payload):
     p = SourceConfiguration(**payload['source'])
 
     return p
+
+
+class Version:
+    """Opaque type that represents a version for this resource
+    Concourse requires this to become a string at some point
+    """
+    def __init__(self, version: str):
+        self.__version = version
+
+    @classmethod
+    def from_file(cls, filename):
+        with open(filename) as content:
+            version_str = content.read()
+
+        return Version(version_str)
+
+    def to_file(self, filename):
+        with open(filename, 'w+') as newfile:
+            newfile.write(self.__version)
+
+    def metadata(self) -> str:
+        return ''
+
+    def __repr__(self) -> str:
+        return self.__version
+
+    def __eq__(self, other) -> bool:
+        if not(isinstance(other, Version)):
+            return False
+
+        return self.__version == other.__version
 
 
 class Repo:

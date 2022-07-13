@@ -42,7 +42,7 @@ def check(instream) -> list:
     repo.sync()
     repo.manifest_out('manifest_snapshot.xml')
 
-    version = common.version_from_file('manifest_snapshot.xml')
+    version = str(common.Version.from_file('manifest_snapshot.xml'))
     new_version = {'version': version}
 
     versions = payload.get('versions', [])
