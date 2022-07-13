@@ -7,10 +7,17 @@
 Common functions for Android repo resource
 """
 import hashlib
+import os
+import sys
+import warnings
 
+from contextlib import redirect_stdout
+from pathlib import Path
 from typing import NamedTuple
 
-CACHEDIR = '/tmp/repo-resource-cache'
+from repo import main as repo
+
+CACHEDIR = Path('/tmp/repo-resource-cache')
 
 
 def sha256sum_from_file(file_location: str) -> str:
@@ -45,3 +52,81 @@ def source_config_from_payload(payload):
     p = SourceConfiguration(**payload['source'])
 
     return p
+
+
+class Repo:
+    """
+    Wrapper around gitrepo to perform operations
+    such as init/sync and manifest
+    """
+
+    def __init__(self, workdir=CACHEDIR):
+        self.__workdir = workdir
+        self.__oldpwd = None
+        workdir.mkdir(parents=True, exist_ok=True)
+
+        # gitrepo from https://github.com/grouperenault/gitrepo
+        # is not python3.10 compatible, so ignore warnings
+        warnings.filterwarnings('ignore',
+                                category=DeprecationWarning,
+                                module='repo')
+
+        # disable all terminal prompting
+        # Repo is intended to be used in CI/automated systems so we
+        # should never be "interactive"
+        os.environ['GIT_TERMINAL_PROMPT'] = '0'
+
+    def __change_to_workdir(self):
+        # move to work directory for all repo operations
+        self.__oldpwd = Path('.').absolute()
+        os.chdir(self.__workdir)
+
+    def __restore_oldpwd(self):
+        os.chdir(self.__oldpwd)
+
+    def init(self, url, revision='HEAD', name='default.xml'):
+        self.__change_to_workdir()
+        try:
+            # Google's repo prints a lot of information to stdout.
+            # Concourse expects every logs to be emitted to stderr:
+            # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
+            with redirect_stdout(sys.stderr):
+                repo._Main([
+                    '--no-pager', 'init', '--manifest-url', url,
+                    '--manifest-branch', revision, '--manifest-name', name,
+                    '--depth=1', '--no-tags'
+                ])
+        except Exception as e:
+            raise (e)
+        finally:
+            self.__restore_oldpwd()
+
+    def sync(self):
+        self.__change_to_workdir()
+        try:
+            with redirect_stdout(sys.stderr):
+                repo._Main([
+                    '--no-pager', 'sync', '--verbose', '--current-branch',
+                    '--detach', '--no-tags', '--fail-fast'
+                ])
+        except Exception as e:
+            raise (e)
+        finally:
+            self.__restore_oldpwd()
+
+    def manifest_out(self, filename):
+        self.__change_to_workdir()
+        try:
+            # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
+            # snapshot into memory because repo._Main() seems to close
+            # the StringIO immediately after being called
+            with redirect_stdout(sys.stderr):
+                repo._Main([
+                    '--no-pager', 'manifest', '--revision-as-HEAD',
+                    '--output-file',
+                    os.path.join(self.__oldpwd / filename)
+                ])
+        except Exception as e:
+            raise (e)
+        finally:
+            self.__restore_oldpwd()

@@ -19,14 +19,8 @@ Concourse as a "version"
 import json
 import os
 import sys
-from pathlib import Path
 import tempfile
-import warnings
 import ssh_agent_setup
-
-from contextlib import redirect_stdout
-
-from repo import main as repo
 
 from repo_resource import common
 
@@ -50,36 +44,6 @@ def add_private_key_to_agent(private_key: str):
         os.unlink(keypath)
 
 
-def repo_init(url, revision='HEAD', name='default.xml'):
-    # Google's repo prints a lot of information to stdout.
-    # Concourse expects every logs to be emitted to stderr:
-    # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
-    with redirect_stdout(sys.stderr):
-        repo._Main([
-            '--no-pager', 'init', '--manifest-url', url, '--manifest-branch',
-            revision, '--manifest-name', name, '--depth=1', '--no-tags'
-        ])
-
-
-def repo_sync():
-    with redirect_stdout(sys.stderr):
-        repo._Main([
-            '--no-pager', 'sync', '--verbose', '--current-branch', '--detach',
-            '--no-tags', '--fail-fast'
-        ])
-
-
-def repo_manifest_out(filename):
-    # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
-    # snapshot into memory because repo._Main() seems to close
-    # the StringIO immediately after being called
-    with redirect_stdout(sys.stderr):
-        repo._Main([
-            '--no-pager', 'manifest', '--revision-as-HEAD', '--output-file',
-            filename
-        ])
-
-
 def check(instream) -> list:
     """Checks a json formatted IOstream for new versions
 
@@ -97,41 +61,18 @@ def check(instream) -> list:
     if config.private_key is not None:
         add_private_key_to_agent(config.private_key)
 
-    # disable all terminal prompting
-    # check is called from CI/automated systems so we should never
-    # be "interactive"
-    os.environ['GIT_TERMINAL_PROMPT'] = '0'
+    repo = common.Repo()
 
-    # gitrepo from https://github.com/grouperenault/gitrepo
-    # is not python3.10 compatible, so ignore warnings
-    warnings.filterwarnings('ignore',
-                            category=DeprecationWarning,
-                            module='repo')
+    repo.init(config.url, config.revision, config.name)
+    repo.sync()
+    repo.manifest_out('manifest_snapshot.xml')
 
-    # move to CACHEDIR for all repo operations
-    initial_path = Path('.').absolute()
+    sha256 = common.sha256sum_from_file('manifest_snapshot.xml')
+    new_version = {'sha256': sha256}
 
-    try:
-        cache = Path(common.CACHEDIR)
-        cache.mkdir(exist_ok=True)
-        os.chdir(cache)
-
-        repo_init(config.url, config.revision, config.name)
-        repo_sync()
-        repo_manifest_out('manifest_snapshot.xml')
-
-        sha256 = common.sha256sum_from_file('manifest_snapshot.xml')
-        new_version = {'sha256': sha256}
-
-        versions = payload.get('versions', [])
-        if versions.count(new_version) == 0:
-            versions.append(new_version)
-
-    except Exception as e:
-        raise (e)
-
-    finally:
-        os.chdir(initial_path)
+    versions = payload.get('versions', [])
+    if versions.count(new_version) == 0:
+        versions.append(new_version)
 
     return versions
 
