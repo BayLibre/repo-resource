@@ -32,8 +32,10 @@ def add_private_key_to_agent(private_key: str):
         os.close(fd)
         ssh_agent_setup.setup()
         ssh_agent_setup.add_key(keypath)
-    # keys can be invalid, so make sure to throw
-    # in that case
+    # keys can be invalid, so make sure to throw in that case
+    # Note that we *MUST* catch all exceptions to ensure
+    # that we go through the finally block which deletes
+    # the key (sensitive information) from disk
     except Exception as e:
         raise e
     finally:
