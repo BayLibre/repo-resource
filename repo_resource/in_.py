@@ -45,7 +45,10 @@ def in_(instream, dest_dir='.'):
     if fetched_version != requested_version:
         raise RuntimeError('Could not fetch requested version')
 
-    return {"version": {"version": str(fetched_version)}}
+    metadata = repo.metadata()
+
+    return {"version": {"version": str(fetched_version)},
+            "metadata": metadata}
 
 
 def main():

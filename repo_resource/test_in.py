@@ -61,3 +61,17 @@ class TestIn(unittest.TestCase):
         fetched_version = in_.in_(instream, str(common.CACHEDIR))
 
         self.assertEquals(fetched_version['version'], data['version'])
+
+    def test_get_metadata(self):
+        data = self.demo_manifests_source
+        data['version'] = {
+            'version':
+            '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n  <remote name="aosp" fetch="https://android.googlesource.com/"/>\n  \n  <default remote="aosp" revision="refs/tags/android-12.0.0_r32"/>\n  \n  <project name="device/generic/common" revision="033d50e2298811d81de7db8cdea63e349a96c9ba" upstream="refs/tags/android-12.0.0_r32" dest-branch="refs/tags/android-12.0.0_r32" groups="pdk"/>\n</manifest>\n'  # noqa: E501
+        }
+        instream = StringIO(json.dumps(data))
+        result = in_.in_(instream, str(common.CACHEDIR))
+        expected_project = 'device/generic/common'
+        expected_revision = '033d50e2298811d81de7db8cdea63e349a96c9ba'
+
+        self.assertEquals(result['metadata'][0]['name'], expected_project)
+        self.assertEquals(result['metadata'][0]['value'], expected_revision)

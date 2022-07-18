@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 import ssh_agent_setup
+from repo import manifest_xml
 from repo import main as repo
 
 CACHEDIR = Path('/tmp/repo-resource-cache')
@@ -172,6 +173,18 @@ class Repo:
             version = Version.from_file(tmp_manifest)
 
         return version
+
+    def metadata(self):
+        metadata = []
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_manifest = os.path.join(tmpdir, 'manifest_snapshot')
+            self.__manifest_out(tmp_manifest)
+            xm = manifest_xml.XmlManifest(
+                os.path.join(self.__workdir, '.repo'), tmp_manifest)
+            for p in xm.projects:
+                metadata.append({'name': p.name, 'value': p.GetRevisionId()})
+
+        return metadata
 
     def __manifest_out(self, filename):
         self.__change_to_workdir()
