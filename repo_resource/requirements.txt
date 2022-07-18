@@ -1,3 +1,3 @@
-gitrepo
+gitrepo==2.15.4.post1
 # FIXME: move to PyPi version once https://github.com/haarcuba/ssh-agent-setup/pull/10 is merged
 git+https://github.com/makohoek/ssh-agent-setup.git@subprocess-logger
