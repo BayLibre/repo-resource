@@ -144,7 +144,8 @@ class TestCheck(unittest.TestCase):
         # we passed no version as input, so we should just get current version
         self.assertEqual(len(versions), 1)
         # and we know that version
-        expected_sha256sum = 'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
+        expected_sha256sum = \
+            'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
         sha256sum = versions[0]['sha256']
         self.assertEqual(sha256sum, expected_sha256sum)
 
@@ -156,13 +157,13 @@ class TestCheck(unittest.TestCase):
         instream = StringIO(json.dumps(data))
         versions = check.check(instream)
         self.assertEqual(len(versions), 2)
-        expected_sha256sum = 'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
+        expected_sha256sum = \
+            'b5741d6f348bdb090712ba4ca2302394e16764833ed09169c31575da5b266eb8'
         newest_sha256sum = versions[-1]['sha256']
         self.assertEqual(newest_sha256sum, expected_sha256sum)
 
-
     @unittest.skipUnless(Path('development/ssh/test_key').exists(),
-                     "requires ssh test key")
+                         "requires ssh test key")
     def test_ssh_private_key(self):
         data = self.demo_ssh_manifests_source
 
