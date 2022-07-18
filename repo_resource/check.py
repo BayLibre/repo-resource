@@ -83,7 +83,7 @@ def check(instream) -> list:
     name = payload['source'].get('name', 'default.xml')
     private_key = payload['source'].get('private_key', None)
 
-    if private_key != None:
+    if private_key is not None:
         add_private_key_to_agent(private_key)
 
     # move to CACHEDIR for all repo operations
