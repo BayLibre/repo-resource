@@ -14,6 +14,7 @@ import warnings
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import NamedTuple
+from urllib.parse import urlparse
 
 import ssh_agent_setup
 from repo import manifest_xml
@@ -59,6 +60,12 @@ def source_config_from_payload(payload):
         raise RuntimeError('manifest url is mandatory')
 
     p = SourceConfiguration(**payload['source'])
+    source_url = urlparse(p.url)
+
+    if source_url.netloc == 'gitlab.com' and \
+       (source_url.scheme == 'http' or source_url.scheme == 'https'):
+        if not source_url.path.endswith('.git'):
+            raise RuntimeError('gitlab http(s) urls must end with .git')
 
     return p
 
