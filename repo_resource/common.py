@@ -156,7 +156,7 @@ class Repo:
                     repo._Main([
                         '--no-pager', 'sync', '--verbose',
                         '--current-branch', '--detach', '--no-tags',
-                        '--fail-fast'
+                        '--fail-fast', '--force-sync'
                     ])
                 else:
                     with tempfile.TemporaryDirectory() as tmpdir:
@@ -166,7 +166,7 @@ class Repo:
                             '--no-pager', 'sync', '--verbose',
                             '--current-branch', '--detach', '--no-tags',
                             '--fail-fast', '--manifest-name',
-                            tmp_manifest
+                            tmp_manifest, '--force-sync'
                         ])
         except Exception as e:
             raise (e)
