@@ -174,6 +174,25 @@ class TestCheck(unittest.TestCase):
         # we passed no version as input, so we should just get current version
         self.assertEqual(len(versions), 1)
 
+    @unittest.skipUnless(
+        Path('development/ssh/test_key').exists(), "requires ssh test key")
+    def test_ssh_private_key_without_newline(self):
+        data = self.demo_ssh_manifests_source
+
+        private_test_key = Path('development/ssh/test_key')
+
+        # strip the trailing newline from the key. This should break
+        # ssh key parsing with:
+        # raise Exception('failed to add the key: {}'.format(key_file))
+        # Exception: failed to add the key: /tmp/tmpzf7o24iu
+        data['source']['private_key'] = private_test_key.read_text().rstrip(
+            '\n')
+
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+        # we passed no version as input, so we should just get current version
+        self.assertEqual(len(versions), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

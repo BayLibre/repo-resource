@@ -6,6 +6,7 @@
 """
 Common functions for Android repo resource
 """
+import logging
 import os
 import sys
 import tempfile
@@ -27,6 +28,10 @@ def add_private_key_to_agent(private_key: str):
     tmp = tempfile.mkstemp(text=True)
     fd = tmp[0]
     keypath = tmp[1]
+
+    if not private_key.endswith('\n'):
+        logging.warning('private_key has no newline termination, adding it')
+        private_key = private_key + '\n'
 
     try:
         os.write(fd, private_key.encode())

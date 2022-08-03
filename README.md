@@ -11,6 +11,7 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 * `name`: *Optional.* initial manifest file.
 
 * `private_key`: *Optional.* Private key to use when pulling/pushing.
+    Should be newline (`\n`) terminated.
     Note that keys requiring a passphrase are un-supported.
     Example:
 
