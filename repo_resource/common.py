@@ -52,7 +52,7 @@ class SourceConfiguration(NamedTuple):
     url: str
     revision: str = 'HEAD'
     name: str = 'default.xml'
-    private_key: str = None
+    private_key: str = '_invalid'
 
 
 def source_config_from_payload(payload):

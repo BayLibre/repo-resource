@@ -33,7 +33,7 @@ def check(instream) -> list:
 
     config = common.source_config_from_payload(payload)
 
-    if config.private_key is not None:
+    if config.private_key != '_invalid':
         common.add_private_key_to_agent(config.private_key)
 
     repo = common.Repo()

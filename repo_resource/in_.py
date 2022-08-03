@@ -33,7 +33,7 @@ def in_(instream, dest_dir='.'):
     config = common.source_config_from_payload(payload)
     requested_version = common.Version(payload['version']['version'])
 
-    if config.private_key is not None:
+    if config.private_key != '_invalid':
         common.add_private_key_to_agent(config.private_key)
 
     repo = common.Repo(workdir=Path(dest_dir))
