@@ -95,7 +95,7 @@ class Version:
         return self.__version
 
     def __eq__(self, other) -> bool:
-        if not(isinstance(other, Version)):
+        if not isinstance(other, Version):
             return False
 
         return self.__version == other.__version
