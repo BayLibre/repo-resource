@@ -24,6 +24,9 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
       -----END RSA PRIVATE KEY-----
     ```
 
+* `depth`: *Optional.* shallow clone with a history truncated to the specified number of commits.
+    Defaults to full git clone for each project.
+
 ### Example
 
 Resource configuration for a public project using repo (Android)

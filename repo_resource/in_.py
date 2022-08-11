@@ -38,7 +38,7 @@ def in_(instream, dest_dir='.'):
 
     repo = common.Repo(workdir=Path(dest_dir))
 
-    repo.init(config.url, config.revision, config.name)
+    repo.init(config.url, config.revision, config.name, config.depth)
     repo.sync(requested_version)
     fetched_version = repo.currentVersion()
 

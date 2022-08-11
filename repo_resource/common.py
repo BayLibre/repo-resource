@@ -58,6 +58,7 @@ class SourceConfiguration(NamedTuple):
     revision: str = 'HEAD'
     name: str = 'default.xml'
     private_key: str = '_invalid'
+    depth: int = -1
 
 
 def source_config_from_payload(payload):
@@ -136,19 +137,23 @@ class Repo:
     def __restore_oldpwd(self):
         os.chdir(self.__oldpwd)
 
-    def init(self, url, revision='HEAD', name='default.xml'):
+    def init(self, url, revision='HEAD', name='default.xml', depth=-1):
         self.__change_to_workdir()
         try:
             # Google's repo prints a lot of information to stdout.
             # Concourse expects every logs to be emitted to stderr:
             # https://concourse-ci.org/implementing-resource-types.html#implementing-resource-types
             with redirect_stdout(sys.stderr):
-                print('Downloading manifest from {}'.format(url))
-                repo._Main([
+                repo_cmd = [
                     '--no-pager', 'init', '--quiet', '--manifest-url', url,
                     '--manifest-branch', revision, '--manifest-name', name,
-                    '--depth=1', '--no-tags'
-                ])
+                    '--no-tags',
+                ]
+                if depth > 0:
+                    repo_cmd.append('--depth={}'.format(depth))
+
+                print('Downloading manifest from {}'.format(url))
+                repo._Main(repo_cmd)
                 print('repo has been initialized in {}'.format(self.__workdir))
 
         except Exception as e:
