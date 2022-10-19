@@ -198,7 +198,8 @@ class TestCheck(unittest.TestCase):
 
         # This is just a private key randomly generated with
         # ssh-keygen. It should not have access to demo_ssh_manifests_source
-        data['source']['private_key'] = '''-----BEGIN OPENSSH PRIVATE KEY-----
+        data['source']['private_key'] = \
+            '''-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
 NhAAAAAwEAAQAAAYEAynCIWzvSq/Tc6qg+/ZHOfTrKoc8h5zeZ/7uGPG/wWVZqp4CHSSae
 w77FCX8gFKAeiE7Dncsw+7WiA7m4gh/Xos8yleSbXnrMJF5nHKpCszuZMz1wjne57WPU1I
@@ -252,7 +253,8 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
         # This is just a private key randomly generated with
         # ssh-keygen. It should not have access to demo_ssh_manifests_source
-        data['source']['private_key'] = '''-----BEGIN OPENSSH PRIVATE KEY-----
+        data['source']['private_key'] = \
+            '''-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
 NhAAAAAwEAAQAAAYEAynCIWzvSq/Tc6qg+/ZHOfTrKoc8h5zeZ/7uGPG/wWVZqp4CHSSae
 w77FCX8gFKAeiE7Dncsw+7WiA7m4gh/Xos8yleSbXnrMJF5nHKpCszuZMz1wjne57WPU1I

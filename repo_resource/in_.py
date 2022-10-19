@@ -36,16 +36,26 @@ def in_(instream, dest_dir='.'):
     if config.private_key != '_invalid':
         common.add_private_key_to_agent(config.private_key)
 
-    repo = common.Repo(workdir=Path(dest_dir))
+    try:
+        repo = common.Repo(workdir=Path(dest_dir))
 
-    repo.init(config.url, config.revision, config.name, config.depth)
-    repo.sync(requested_version)
-    fetched_version = repo.currentVersion()
+        repo.init(config.url, config.revision, config.name, config.depth)
+        repo.sync(requested_version)
+        fetched_version = repo.currentVersion()
+    except Exception as e:
+        raise e
+    finally:
+        # always remove the key from the agent
+        if config.private_key != '_invalid':
+            common.remove_private_key_from_agent()
 
     if fetched_version != requested_version:
         raise RuntimeError('Could not fetch requested version')
 
     metadata = repo.metadata()
+
+    if config.private_key != '_invalid':
+        common.remove_private_key_from_agent()
 
     return {"version": {"version": str(fetched_version)},
             "metadata": metadata}

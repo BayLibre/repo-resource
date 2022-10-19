@@ -36,11 +36,17 @@ def check(instream) -> list:
     if config.private_key != '_invalid':
         common.add_private_key_to_agent(config.private_key)
 
-    repo = common.Repo()
-
-    repo.init(config.url, config.revision, config.name, depth=1)
-    repo.sync()
-    version = repo.currentVersion()
+    try:
+        repo = common.Repo()
+        repo.init(config.url, config.revision, config.name, depth=1)
+        repo.sync()
+        version = repo.currentVersion()
+    except Exception as e:
+        raise e
+    finally:
+        # always remove the key from the agent
+        if config.private_key != '_invalid':
+            common.remove_private_key_from_agent()
 
     new_version = {'version': str(version)}
 

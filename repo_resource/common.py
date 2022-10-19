@@ -6,6 +6,7 @@
 """
 Common functions for Android repo resource
 """
+import atexit
 import logging
 import os
 import sys
@@ -47,6 +48,12 @@ def add_private_key_to_agent(private_key: str):
     finally:
         # always delete the key from the container
         os.unlink(keypath)
+
+
+def remove_private_key_from_agent():
+    ssh_agent_setup._kill_agent()
+    # don't call _kill_agent twice via exit()
+    atexit.unregister(ssh_agent_setup._kill_agent)
 
 
 class SourceConfiguration(NamedTuple):
