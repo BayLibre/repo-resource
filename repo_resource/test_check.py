@@ -193,6 +193,111 @@ class TestCheck(unittest.TestCase):
         # we passed no version as input, so we should just get current version
         self.assertEqual(len(versions), 1)
 
+    def test_ssh_private_key_without_project_access(self):
+        data = self.demo_ssh_manifests_source
+
+        # This is just a private key randomly generated with
+        # ssh-keygen. It should not have access to demo_ssh_manifests_source
+        data['source']['private_key'] = '''-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----'''
+
+        instream = StringIO(json.dumps(data))
+        versions = []
+        with self.assertRaises(SystemExit):
+            versions = check.check(instream)
+
+        self.assertEquals(len(versions), 0)
+
+    def test_ssh_private_key_without_manifest_access(self):
+        data = self.demo_ssh_manifests_source
+
+        # use a git/ssh url this time with an invalid key
+        data['source']['url'] = 'git@github.com:makohoek/demo-manifests.git'
+
+        # This is just a private key randomly generated with
+        # ssh-keygen. It should not have access to demo_ssh_manifests_source
+        data['source']['private_key'] = '''-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----'''
+
+        instream = StringIO(json.dumps(data))
+        versions = []
+        with self.assertRaises(SystemExit):
+            versions = check.check(instream)
+
+        self.assertEquals(len(versions), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
