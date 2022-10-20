@@ -54,9 +54,6 @@ def in_(instream, dest_dir='.'):
 
     metadata = repo.metadata()
 
-    if config.private_key != '_invalid':
-        common.remove_private_key_from_agent()
-
     return {"version": {"version": str(fetched_version)},
             "metadata": metadata}
 

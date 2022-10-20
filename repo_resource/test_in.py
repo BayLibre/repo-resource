@@ -8,9 +8,11 @@ import json
 from io import StringIO
 import shutil
 import unittest
+from pathlib import Path
 
 import repo
 
+from . import check
 from . import common
 from . import in_
 
@@ -23,6 +25,13 @@ class TestIn(unittest.TestCase):
                 'url': 'https://github.com/makohoek/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_device_fixed.xml'
+            }
+        }
+        self.demo_ssh_manifests_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'baylibre_ssh_project.xml',
             }
         }
 
@@ -75,3 +84,20 @@ class TestIn(unittest.TestCase):
 
         self.assertEquals(result['metadata'][0]['name'], expected_project)
         self.assertEquals(result['metadata'][0]['value'], expected_revision)
+
+    @unittest.skipUnless(
+        Path('development/ssh/test_key').exists(), "requires ssh test key")
+    def test_ssh_private_key(self):
+
+        data = self.demo_ssh_manifests_source
+
+        private_test_key = Path('development/ssh/test_key')
+        data['source']['private_key'] = private_test_key.read_text()
+
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        data['version'] = versions[0]
+
+        instream = StringIO(json.dumps(data))
+        in_.in_(instream, str(common.CACHEDIR))
