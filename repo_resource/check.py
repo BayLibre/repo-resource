@@ -38,7 +38,7 @@ def check(instream) -> list:
 
     try:
         repo = common.Repo()
-        repo.init(config.url, config.revision, config.name, depth=1)
+        repo.init(config.url, config.revision, config.name, config.depth)
         repo.sync()
         version = repo.currentVersion()
     except Exception as e:
