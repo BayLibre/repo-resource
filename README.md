@@ -48,6 +48,25 @@ resources:
     name: default.xml
 ```
 
+## Behavior
+
+### `check`: Check for new versions in each project under a manifest
+
+Repo init and repo sync are called for a given manifest.
+After that, `--revision-as-HEAD` is called to capture the HEADs of each each project.
+The whole list of projects is returned as a "manifest version".
+
+### `in`: Syncs the repository, for a given manifest version
+
+Repo syncs the repo to the destination, and locks it down to a given manifest
+version.
+It will return the same given ref as version.
+
+### `out`: No-op
+
+Out is not implemented.
+
+
 ## Contributing/development
 
 ### Rebuilding the docker image
