@@ -1,2 +1,2 @@
-gitrepo==2.15.4.post1
+gitrepo==2.31.1
 ssh-agent-setup==2.0.1
