@@ -153,11 +153,14 @@ class Repo:
             with redirect_stdout(sys.stderr):
                 repo_cmd = [
                     '--no-pager', 'init', '--quiet', '--manifest-url', url,
-                    '--manifest-branch', revision, '--manifest-name', name,
+                    '--manifest-name', name,
                     '--no-tags',
                 ]
                 if depth > 0:
                     repo_cmd.append('--depth={}'.format(depth))
+
+                if revision is not None:
+                    repo_cmd.append('--manifest-branch={}'.format(revision))
 
                 print('Downloading manifest from {}'.format(url))
                 repo._Main(repo_cmd)
