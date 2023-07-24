@@ -101,3 +101,18 @@ class TestIn(unittest.TestCase):
 
         instream = StringIO(json.dumps(data))
         in_.in_(instream, str(common.CACHEDIR))
+
+    def test_manifest_is_saved(self):
+        data = self.demo_manifests_source
+        data['version'] = {
+            'version':
+            '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n  <remote name="aosp" fetch="https://android.googlesource.com/"/>\n  \n  <default remote="aosp" revision="refs/tags/android-12.0.0_r32"/>\n  \n  <project name="device/generic/common" revision="033d50e2298811d81de7db8cdea63e349a96c9ba" upstream="refs/tags/android-12.0.0_r32" dest-branch="refs/tags/android-12.0.0_r32" groups="pdk"/>\n</manifest>\n'  # noqa: E501
+        }
+        instream = StringIO(json.dumps(data))
+        in_.in_(instream, str(common.CACHEDIR))
+
+        saved_manifest_version = common.Version.from_file(
+            common.CACHEDIR / '.repo_manifest.xml')
+        expected_manifest_version = common.Version(data['version']['version'])
+
+        self.assertEquals(saved_manifest_version, expected_manifest_version)

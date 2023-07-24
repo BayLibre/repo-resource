@@ -52,6 +52,9 @@ def in_(instream, dest_dir='.'):
     if fetched_version != requested_version:
         raise RuntimeError('Could not fetch requested version')
 
+    # save a copy of the manifest alongside the sources
+    repo.save_manifest('.repo_manifest.xml')
+
     metadata = repo.metadata()
 
     return {"version": {"version": str(fetched_version)},

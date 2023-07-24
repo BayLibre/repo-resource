@@ -196,6 +196,13 @@ class Repo:
         finally:
             self.__restore_oldpwd()
 
+    def save_manifest(self, filename):
+        with redirect_stdout(sys.stderr):
+            full_path = self.__workdir / filename
+            current_version = self.currentVersion()
+            print('Saving manifest to {}'.format(full_path))
+            current_version.to_file(full_path)
+
     def currentVersion(self) -> Version:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_manifest = os.path.join(tmpdir, 'manifest_snapshot')
