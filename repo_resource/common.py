@@ -66,6 +66,7 @@ class SourceConfiguration(NamedTuple):
     name: str = 'default.xml'
     private_key: str = '_invalid'
     depth: int = -1
+    jobs: int = 0
 
 
 def source_config_from_payload(payload):
@@ -171,7 +172,7 @@ class Repo:
         finally:
             self.__restore_oldpwd()
 
-    def sync(self, version: Version = None):
+    def sync(self, version: Version = None, jobs: int = 0):
         self.__change_to_workdir()
         try:
             with redirect_stdout(sys.stderr):
@@ -180,6 +181,10 @@ class Repo:
                     '--current-branch', '--detach', '--no-tags',
                     '--fail-fast', '--force-sync'
                 ]
+
+                if jobs > 0:
+                    repo_cmd.append('--jobs={}'.format(jobs))
+
                 if version is None:
                     repo._Main(repo_cmd)
                 else:

@@ -8,6 +8,7 @@ import json
 from io import StringIO
 import unittest
 from pathlib import Path
+from timeit import default_timer as timer
 import shutil
 import repo
 
@@ -35,6 +36,13 @@ class TestCheck(unittest.TestCase):
                 'url': 'https://github.com/makohoek/demo-manifests.git',
                 'revision': 'main',
                 'name': 'baylibre_ssh_project.xml',
+            }
+        }
+        self.demo_multiple_aosp_device_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'aosp_multiple_device_fixed.xml'
             }
         }
 
@@ -299,6 +307,31 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
             versions = check.check(instream)
 
         self.assertEquals(len(versions), 0)
+
+    # test that we can specify an amount of jobs
+    # This is a little flaky because it depends on network
+    def test_jobs_limit(self):
+        data = self.demo_multiple_aosp_device_source
+
+        data['source']['jobs'] = 24
+        start = timer()
+        instream = StringIO(json.dumps(data))
+        check.check(instream)
+        end = timer()
+        fast_duration = end - start
+
+        # call tearDown() manually to clear the CACHE dir
+        self.tearDown()
+
+        data['source']['jobs'] = 1
+        start = timer()
+        instream = StringIO(json.dumps(data))
+        check.check(instream)
+        end = timer()
+        slow_duration = end - start
+
+        print('fast: {} slow: {}'.format(fast_duration, slow_duration))
+        self.assertTrue(fast_duration < slow_duration)
 
 
 if __name__ == '__main__':

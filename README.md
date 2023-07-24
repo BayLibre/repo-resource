@@ -27,6 +27,9 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 * `depth`: *Optional.* shallow clone with a history truncated to the specified number of commits.
     Defaults to full git clone for each project.
 
+* `jobs`: *Optional.* number of jobs to run in parallel (default: 0; based on number of CPU cores)
+   Reduce this if you observe network errors.
+
 ### Example
 
 Resource configuration for a public project using repo (Android)
@@ -47,6 +50,7 @@ resources:
     branch: master
     name: default.xml
     depth: 1 # use shallow clone for faster syncing
+    jobs: 4  # run with -j4
 ```
 
 ## Behavior

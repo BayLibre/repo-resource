@@ -39,7 +39,7 @@ def check(instream) -> list:
     try:
         repo = common.Repo()
         repo.init(config.url, config.revision, config.name, config.depth)
-        repo.sync()
+        repo.sync(jobs=config.jobs)
         version = repo.currentVersion()
     except Exception as e:
         raise e
