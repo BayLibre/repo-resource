@@ -88,6 +88,21 @@ Use `make test` for running the unit(integration) tests:
 make test
 ```
 
+If you wish to run a single test, just edit the `Dockerfile.development`:
+
+```diff
+diff --git a/Dockerfile.development b/Dockerfile.development
+index 81fbb349c014..431f07b59917 100644
+--- a/Dockerfile.development
++++ b/Dockerfile.development
+@@ -4,4 +4,4 @@ FROM repo-resource:latest
+ COPY repo_resource /root/repo_resource
+ COPY development/ssh/ /root/development/ssh/
+ WORKDIR /root/
+-CMD python -m unittest
++CMD python -m unittest repo_resource.test_check.TestCheck.test_branch_defaults_to_HEAD
+```
+
 ### Local concourse instance and docker registry.
 
 It's also possible to use a local docker registry (instead of docker hub) for development.
