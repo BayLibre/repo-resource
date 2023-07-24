@@ -175,22 +175,20 @@ class Repo:
         self.__change_to_workdir()
         try:
             with redirect_stdout(sys.stderr):
+                repo_cmd = [
+                    '--no-pager', 'sync', '--verbose',
+                    '--current-branch', '--detach', '--no-tags',
+                    '--fail-fast', '--force-sync'
+                ]
                 if version is None:
-                    repo._Main([
-                        '--no-pager', 'sync', '--verbose',
-                        '--current-branch', '--detach', '--no-tags',
-                        '--fail-fast', '--force-sync'
-                    ])
+                    repo._Main(repo_cmd)
                 else:
                     with tempfile.TemporaryDirectory() as tmpdir:
                         tmp_manifest = os.path.join(tmpdir, 'manifest_tmp')
                         version.to_file(tmp_manifest)
-                        repo._Main([
-                            '--no-pager', 'sync', '--verbose',
-                            '--current-branch', '--detach', '--no-tags',
-                            '--fail-fast', '--manifest-name',
-                            tmp_manifest, '--force-sync'
-                        ])
+                        repo_cmd.append(
+                            '--manifest-name={}'.format(tmp_manifest))
+                        repo._Main(repo_cmd)
         except Exception as e:
             raise (e)
         finally:
