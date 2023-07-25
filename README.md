@@ -46,6 +46,7 @@ resources:
     url: https://android.googlesource.com/platform/manifest
     branch: master
     name: default.xml
+    depth: 1 # use shallow clone for faster syncing
 ```
 
 ## Behavior
