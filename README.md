@@ -8,7 +8,7 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 
 * `revision`: *Optional.* manifest branch or revision (use `HEAD` for default).
 
-* `name`: *Optional.* initial manifest file.
+* `name`: *Optional.* initial manifest file. (use `default.xml` for default).
 
 * `private_key`: *Optional.* Private key to use when pulling/pushing.
     Should be newline (`\n`) terminated.
