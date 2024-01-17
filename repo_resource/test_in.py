@@ -69,7 +69,7 @@ class TestIn(unittest.TestCase):
         instream = StringIO(json.dumps(data))
         fetched_version = in_.in_(instream, str(common.CACHEDIR))
 
-        self.assertEquals(fetched_version['version'], data['version'])
+        self.assertEqual(fetched_version['version'], data['version'])
 
     def test_get_metadata(self):
         data = self.demo_manifests_source
@@ -82,8 +82,8 @@ class TestIn(unittest.TestCase):
         expected_project = 'device/generic/common'
         expected_revision = '033d50e2298811d81de7db8cdea63e349a96c9ba'
 
-        self.assertEquals(result['metadata'][0]['name'], expected_project)
-        self.assertEquals(result['metadata'][0]['value'], expected_revision)
+        self.assertEqual(result['metadata'][0]['name'], expected_project)
+        self.assertEqual(result['metadata'][0]['value'], expected_revision)
 
     @unittest.skipUnless(
         Path('development/ssh/test_key').exists(), "requires ssh test key")
@@ -115,4 +115,4 @@ class TestIn(unittest.TestCase):
             common.CACHEDIR / '.repo_manifest.xml')
         expected_manifest_version = common.Version(data['version']['version'])
 
-        self.assertEquals(saved_manifest_version, expected_manifest_version)
+        self.assertEqual(saved_manifest_version, expected_manifest_version)

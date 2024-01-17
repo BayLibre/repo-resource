@@ -251,7 +251,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         with self.assertRaises(SystemExit):
             versions = check.check(instream)
 
-        self.assertEquals(len(versions), 0)
+        self.assertEqual(len(versions), 0)
 
     def test_ssh_private_key_without_manifest_access(self):
         data = self.demo_ssh_manifests_source
@@ -306,7 +306,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         with self.assertRaises(SystemExit):
             versions = check.check(instream)
 
-        self.assertEquals(len(versions), 0)
+        self.assertEqual(len(versions), 0)
 
     # test that we can specify an amount of jobs
     # This is a little flaky because it depends on network
