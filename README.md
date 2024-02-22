@@ -62,8 +62,8 @@ resources:
 
 ### `check`: Check for new versions in each project under a manifest
 
-Repo init and repo sync are called for a given manifest.
-After that, `--revision-as-HEAD` is called to capture the HEADs of each each project.
+Repo init and `git ls-remote` are called for a given manifest.
+After that we update the input manifest with the revisions retrieved from `git ls-remote`.
 The whole list of projects is returned as a "manifest version".
 
 ### `in`: Syncs the repository, for a given manifest version
