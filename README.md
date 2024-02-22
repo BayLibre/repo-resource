@@ -51,7 +51,7 @@ resources:
   check_every: 2h # default of 1min seems too frequent
   source:
     url: https://android.googlesource.com/platform/manifest
-    branch: master
+    branch: main
     name: default.xml
     depth: 1 # use shallow clone for faster syncing
     jobs: 4  # run with -j4
