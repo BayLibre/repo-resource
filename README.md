@@ -43,6 +43,7 @@ resource_types:
   type: registry-image
   source:
     repository: mkorpershoek/repo-resource
+    tag: v1.0.0
 
 resources:
 - name: aosp
