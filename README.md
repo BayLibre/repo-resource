@@ -55,6 +55,7 @@ resources:
     name: default.xml
     depth: 1 # use shallow clone for faster syncing
     jobs: 4  # run with -j4
+    check_jobs: 6 # do 6 git ls-remote operations in parallel (check only)
 ```
 
 ## Behavior
