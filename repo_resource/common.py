@@ -355,6 +355,7 @@ class Repo:
 
     def update_manifest(self, jobs):
         projects = []
+        removed_projects = []
 
         jobs = jobs or DEFAULT_CHECK_JOBS
         self.__change_to_workdir()
@@ -378,6 +379,24 @@ class Repo:
                     defaultRemote = defaults.get('remote')
                     defaultBranch = defaults.get('revision') \
                         or self.__get_remote_revision(defaultRemote)
+
+                # Handle <remove-project /> element:
+                # - Should not be present in final XML (for version)
+                # - Should remove first matching project by name
+                for p in manifest.findall('remove-project'):
+                    project = p.get('name')
+                    removed_projects.append(project)
+                    manifest.remove(p)
+
+                for p in manifest.findall('project'):
+                    project = p.get('name')
+                    if project in removed_projects:
+                        manifest.remove(p)
+                        removed_projects.remove(project)
+                    # If there are no more projects to remove, we can
+                    # skip parsing the rest of the projects
+                    if not removed_projects:
+                        break
 
                 for p in manifest.findall('project'):
                     project = p.get('name')

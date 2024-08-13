@@ -59,6 +59,13 @@ class TestCheck(unittest.TestCase):
                 'name': 'aosp_multiple_device_fixed.xml'
             }
         }
+        self.remove_project_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'aosp_remove_yukawa_project.xml'
+            }
+        }
 
     def tearDown(self):
         p = common.CACHEDIR
@@ -358,6 +365,26 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
         print('fast: {} slow: {}'.format(fast_duration, slow_duration))
         self.assertTrue(fast_duration < slow_duration)
+
+    # test that the `<remove-project>` tag is correctly handled
+    # When rebuilding the Version string.
+    # See: https://github.com/makohoek/repo-resource/issues/36
+    def test_remove_project_version(self):
+        data = self.remove_project_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        expected_version = '<manifest><remote fetch="https://android.googlesource.com/" name="aosp"></remote><remote fetch="https://gitlab.baylibre.com/baylibre/amlogic/atv/aosp/" name="baylibre"></remote><default remote="aosp" revision="refs/tags/android-13.0.0_r62"></default><project name="device/amlogic/yukawa" path="device/amlogic/yukawa" remote="baylibre" revision="0f3423ec0c103d113c2c03953b3a79bb479fd5b7"></project></manifest>'  # noqa: E501
+
+        version = versions[0]['version']
+        self.assertEqual(version, expected_version)
+
+    def test_no_remove_project_element(self):
+        data = self.remove_project_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+        version = versions[0]['version']
+        self.assertNotIn('remove-project', version)
 
 
 if __name__ == '__main__':
