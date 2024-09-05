@@ -376,6 +376,24 @@ class Repo:
         finally:
             self.__restore_oldpwd()
 
+    def resolve_manifest_include(self, manifest):
+        for idx, element in enumerate(list(manifest.iter())):
+            if element.tag == 'include':
+                sub_manifest_name = element.get('name')
+                sub_xml = ET.parse('.repo/manifests/'+sub_manifest_name)
+                sub_manifest = sub_xml.getroot()
+
+                # resolve recursively include in sub manifests
+                self.resolve_manifest_include(sub_manifest)
+
+                # insert sub manifest in the parent without 'manifest' elements
+                for sub_element in reversed(list(sub_manifest.iter())):
+                    if sub_element.tag != 'manifest':
+                        manifest.insert(idx, sub_element)
+
+                # remove 'include' element
+                manifest.remove(element)
+
     def update_manifest(self, jobs):
         projects = []
         removed_projects = []
@@ -387,6 +405,7 @@ class Repo:
                 print('Updating project revisions in manifest')
                 xml = ET.parse('.repo/manifests/'+self.__name)
                 manifest = xml.getroot()
+                self.resolve_manifest_include(manifest)
 
                 for r in manifest.findall('remote'):
                     url = r.get('fetch').rstrip('/')

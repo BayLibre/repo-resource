@@ -78,6 +78,20 @@ class TestCheck(unittest.TestCase):
                 'name': 'aosp_remove_yukawa_project.xml'
             }
         }
+        self.include_one_project_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'aosp_include_one_project.xml'
+            }
+        }
+        self.include_multiple_projects_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'aosp_include_multiple_projects.xml'
+            }
+        }
 
     def tearDown(self):
         p = common.CACHEDIR
@@ -402,6 +416,26 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         versions = check.check(instream)
         version = versions[0]['version']
         self.assertNotIn('remove-project', version)
+
+    def test_include_one_project_version(self):
+        data = self.include_one_project_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        expected_version = '<manifest><remote fetch=\"https://android.googlesource.com/\" name=\"aosp\"></remote><default remote=\"aosp\" revision=\"refs/tags/android-12.0.0_r32\"></default><project groups=\"pdk\" name=\"device/generic/common\" path=\"device/generic/common\" revision=\"033d50e2298811d81de7db8cdea63e349a96c9ba\"></project><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"CirrusLogic/tinyhal\" path=\"external/tinyhal\" remote=\"github\" revision=\"69d47887c13da461bf8400231a1c7f7290826037\"></project></manifest>'  # noqa: E501
+
+        version = versions[0]['version']
+        self.assertEqual(version, expected_version)
+
+    def test_include_multiple_projects_version(self):
+        data = self.include_multiple_projects_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        expected_version = '<manifest><remote fetch=\"https://android.googlesource.com/\" name=\"aosp\"></remote><default remote=\"aosp\" revision=\"refs/tags/android-12.0.0_r32\"></default><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"wimglenn/oyaml\" path=\"external/oyaml\" remote=\"github\" revision=\"6350d9de586f40014296b55427ccbc1d7f47269a\"></project><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"OP-TEE/optee_client\" path=\"vendor/linaro/optee_client\" remote=\"github\" revision=\"8533e0e6329840ee96cf81b6453f257204227e6c\"></project><project groups=\"pdk\" name=\"device/generic/common\" path=\"device/generic/common\" revision=\"033d50e2298811d81de7db8cdea63e349a96c9ba\"></project><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"CirrusLogic/tinyhal\" path=\"external/tinyhal\" remote=\"github\" revision=\"69d47887c13da461bf8400231a1c7f7290826037\"></project></manifest>'  # noqa: E501
+
+        version = versions[0]['version']
+        self.assertEqual(version, expected_version)
 
 
 if __name__ == '__main__':
