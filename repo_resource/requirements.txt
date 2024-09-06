@@ -1,3 +1,4 @@
+setuptools==74.1.2
 gitrepo==2.32.2
 ssh-agent-setup==2.0.1
 GitPython==3.1.31
