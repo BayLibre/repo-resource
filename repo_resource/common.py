@@ -105,12 +105,24 @@ def getRevision(remote, remoteUrl, project, branch):
             if is_sha1(branch):
                 return (remote + '/' + project, branch)
             g = git.cmd.Git()
-            url, revision = (
+            url, revList = (
                 remote + '/' + project,
-                g.ls_remote(remoteUrl+'/'+project, branch).split()[0]
+                g.ls_remote(remoteUrl+'/'+project, branch).split()
             )
-            print('{}: {}'.format(url, revision))
-            return (url, revision)
+
+            # convert revision list to revision dict:
+            # ['SHA1', 'refs/heads/XXXX', 'SHA1', 'refs/heads/YYYY']
+            # -> {'refs/heads/XXXX': 'SHA1', 'refs/heads/YYYY': 'SHA1'}
+            revDict = dict([(b, a)
+                            for a, b in zip(revList[::2], revList[1::2])])
+
+            if branch.startswith('refs/tags'):
+                rev = branch
+            else:
+                rev = 'refs/heads/' + branch
+
+            print('{}: {}'.format(url, revDict[rev]))
+            return (url, revDict[rev])
     except Exception as e:
         with redirect_stdout(sys.stderr):
             print('Cannot fetch project {}/{}'.format(remoteUrl, project))

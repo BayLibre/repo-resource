@@ -92,6 +92,13 @@ class TestCheck(unittest.TestCase):
                 'name': 'aosp_include_multiple_projects.xml'
             }
         }
+        self.branch_matching_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'branch_matching.xml'
+            }
+        }
 
     def tearDown(self):
         p = common.CACHEDIR
@@ -433,6 +440,16 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         versions = check.check(instream)
 
         expected_version = '<manifest><remote fetch=\"https://android.googlesource.com/\" name=\"aosp\"></remote><default remote=\"aosp\" revision=\"refs/tags/android-12.0.0_r32\"></default><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"wimglenn/oyaml\" path=\"external/oyaml\" remote=\"github\" revision=\"6350d9de586f40014296b55427ccbc1d7f47269a\"></project><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"OP-TEE/optee_client\" path=\"vendor/linaro/optee_client\" remote=\"github\" revision=\"8533e0e6329840ee96cf81b6453f257204227e6c\"></project><project groups=\"pdk\" name=\"device/generic/common\" path=\"device/generic/common\" revision=\"033d50e2298811d81de7db8cdea63e349a96c9ba\"></project><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"CirrusLogic/tinyhal\" path=\"external/tinyhal\" remote=\"github\" revision=\"69d47887c13da461bf8400231a1c7f7290826037\"></project></manifest>'  # noqa: E501
+
+        version = versions[0]['version']
+        self.assertEqual(version, expected_version)
+
+    def test_branch_matching(self):
+        data = self.branch_matching_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"makohoek/demo-manifests.git\" path=\"rev\" remote=\"github\" revision=\"bd2eb4ba9b5581373ff276f619a88e248a2c77e7\"></project></manifest>'  # noqa: E501
 
         version = versions[0]['version']
         self.assertEqual(version, expected_version)
