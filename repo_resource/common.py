@@ -94,20 +94,24 @@ def getRevision(remote, remoteUrl, project, branch):
     with git ls-remote command for each project
     without downloading the whole repo
     """
-    # v1.0^{} is the commit referring to tag v1.0
-    # git ls-remote returns the tag sha1 if left as is
-    if branch.startswith('refs/tags'):
-        branch += '^{}'
     try:
         with redirect_stdout(sys.stderr):
-            # return tuple (remote/project, revision)
-            print('Fetching revision for {}/{}...'.format(remote, project))
+            # return tuple (remote/project, branch, revision)
+            print('Fetching revision for {}/{} - {}...'.format(
+                remote, project, branch))
             if is_sha1(branch):
-                return (remote + '/' + project, branch)
+                return (remote + '/' + project, branch, branch)
             g = git.cmd.Git()
+
+            headRef = branch
+            # v1.0^{} is the commit referring to tag v1.0
+            # git ls-remote returns the tag sha1 if left as is
+            if branch.startswith('refs/tags'):
+                headRef += '^{}'
+
             url, revList = (
                 remote + '/' + project,
-                g.ls_remote(remoteUrl+'/'+project, branch).split()
+                g.ls_remote(remoteUrl+'/'+project, headRef).split()
             )
 
             # convert revision list to revision dict:
@@ -117,12 +121,14 @@ def getRevision(remote, remoteUrl, project, branch):
                             for a, b in zip(revList[::2], revList[1::2])])
 
             if branch.startswith('refs/tags'):
-                rev = branch
+                rev = headRef
             else:
                 rev = 'refs/heads/' + branch
 
-            print('{}: {}'.format(url, revDict[rev]))
-            return (url, revDict[rev])
+            print('{} - {}: {}'.format(url, branch, revDict[rev]))
+
+            # return url, branch (without any suffix) and revision
+            return (url, branch, revDict[rev])
     except Exception as e:
         with redirect_stdout(sys.stderr):
             print('Cannot fetch project {}/{}'.format(remoteUrl, project))
@@ -462,15 +468,21 @@ class Repo:
 
                 with Pool(jobs) as pool:
                     revisionList = pool.map(multi_run_wrapper, projects)
-                # Convert (remote/project, revision) tuple list
-                # to hash table dict[remote/project]=revision
-                revisionTable = dict((proj, rev) for proj, rev in revisionList)
 
                 # Update revisions
                 for p in manifest.findall('project'):
                     project = p.get('name')
+                    projectBranch = p.get('revision') or defaultBranch
                     projectRemote = p.get('remote') or defaultRemote
-                    p.set('revision', revisionTable[projectRemote+'/'+project])
+                    # find revision of the project in revisionList
+                    for url, branch, rev in revisionList:
+                        if (
+                            projectRemote + "/" + project == url
+                            and branch == projectBranch
+                        ):
+                            projectRev = rev
+                            break
+                    p.set('revision', projectRev)
 
                 self.__version = Version(
                     ET.canonicalize(

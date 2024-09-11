@@ -99,6 +99,13 @@ class TestCheck(unittest.TestCase):
                 'name': 'branch_matching.xml'
             }
         }
+        self.one_project_multi_path_source = {
+            'source': {
+                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'revision': 'main',
+                'name': 'one_project_multi_path.xml'
+            }
+        }
 
     def tearDown(self):
         p = common.CACHEDIR
@@ -450,6 +457,16 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         versions = check.check(instream)
 
         expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"makohoek/demo-manifests.git\" path=\"rev\" remote=\"github\" revision=\"bd2eb4ba9b5581373ff276f619a88e248a2c77e7\"></project></manifest>'  # noqa: E501
+
+        version = versions[0]['version']
+        self.assertEqual(version, expected_version)
+
+    def test_one_project_multi_path(self):
+        data = self.one_project_multi_path_source
+        instream = StringIO(json.dumps(data))
+        versions = check.check(instream)
+
+        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"makohoek/demo-manifests.git\" path=\"rev-1\" remote=\"github\" revision=\"0370566f0c65d8d7f03b78071b23a1e7480beac7\"></project><project name=\"makohoek/demo-manifests.git\" path=\"rev-2\" remote=\"github\" revision=\"524a18fc90ba5b4d298c4367fa4af959baf73a5f\"></project></manifest>'  # noqa: E501
 
         version = versions[0]['version']
         self.assertEqual(version, expected_version)
