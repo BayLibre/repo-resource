@@ -460,8 +460,10 @@ class Repo:
 
                 for p in manifest.findall('project'):
                     project = p.get('name')
-                    projectBranch = p.get('revision') or defaultBranch
                     projectRemote = p.get('remote') or defaultRemote
+                    projectBranch = p.get('revision') \
+                        or self.__get_remote_revision(projectRemote) \
+                        or defaultBranch
                     projectRemoteUrl = self.__get_remote_url(projectRemote)
                     projects.append((projectRemote, projectRemoteUrl,
                                      project, projectBranch))
@@ -472,8 +474,10 @@ class Repo:
                 # Update revisions
                 for p in manifest.findall('project'):
                     project = p.get('name')
-                    projectBranch = p.get('revision') or defaultBranch
                     projectRemote = p.get('remote') or defaultRemote
+                    projectBranch = p.get('revision') \
+                        or self.__get_remote_revision(projectRemote) \
+                        or defaultBranch
                     # find revision of the project in revisionList
                     for url, branch, rev in revisionList:
                         if (
