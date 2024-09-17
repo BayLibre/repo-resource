@@ -270,7 +270,7 @@ class Repo:
         return self.__remote_url[remote]
 
     def __get_remote_revision(self, remote):
-        return self.__remote_revision[remote]
+        return self.__remote_revision.get(remote)
 
     def set_rewrite(self, matrix: dict = None):
         if matrix is None:
