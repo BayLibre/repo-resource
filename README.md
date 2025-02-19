@@ -52,7 +52,7 @@ resource_types:
 - name: repo
   type: registry-image
   source:
-    repository: mkorpershoek/repo-resource
+    repository: baylibre/repo-resource
     tag: v1.0.0
 
 resources:

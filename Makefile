@@ -1,5 +1,5 @@
-DOCKER_PREFIX=mkorpershoek
-DOCKER_DEV_PREFIX=localhost:5000/mkorpershoek
+DOCKER_PREFIX=baylibre
+DOCKER_DEV_PREFIX=localhost:5000/baylibre
 DOCKER_NAME=repo-resource
 DOCKER_DEV_NAME=testing-repo-resource
 
