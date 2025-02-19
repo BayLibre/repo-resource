@@ -20,14 +20,14 @@ class TestIn(unittest.TestCase):
     def setUp(self):
         self.demo_manifests_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_device_fixed.xml'
             }
         }
         self.demo_ssh_manifests_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'baylibre_ssh_project.xml',
             }
