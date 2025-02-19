@@ -3,7 +3,7 @@ resource_types:
   type: registry-image
   source:
     # modify this to match the IP addr from step 4
-    repository: 172.20.0.4:5000/mkorpershoek/repo-resource
+    repository: 172.20.0.4:5000/baylibre/repo-resource
 
 resources:
 - name: aosp-tools
