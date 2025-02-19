@@ -27,7 +27,7 @@ class TestCheck(unittest.TestCase):
         }
         self.demo_manifests_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_device_fixed.xml'
             }
@@ -35,7 +35,7 @@ class TestCheck(unittest.TestCase):
         self.demo_manifests_to_rewrite_source = {
             'source': {
                 'url':
-                'https://unreachable-github.com/makohoek/demo-manifests.git',
+                'https://unreachable-github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_device_fixed.xml',
                 'rewrite': {
@@ -46,62 +46,62 @@ class TestCheck(unittest.TestCase):
         }
         self.demo_manifests_source_norev = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'name': 'aosp_device_fixed.xml'
             }
         }
         self.default_rev_in_remote = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'default_rev_in_remote.xml'
             }
         }
         self.demo_ssh_manifests_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'baylibre_ssh_project.xml',
             }
         }
         self.demo_multiple_aosp_device_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_multiple_device_fixed.xml'
             }
         }
         self.remove_project_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_remove_yukawa_project.xml'
             }
         }
         self.include_one_project_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_include_one_project.xml'
             }
         }
         self.include_multiple_projects_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'aosp_include_multiple_projects.xml'
             }
         }
         self.branch_matching_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'branch_matching.xml'
             }
         }
         self.one_project_multi_path_source = {
             'source': {
-                'url': 'https://github.com/makohoek/demo-manifests.git',
+                'url': 'https://github.com/baylibre/demo-manifests.git',
                 'revision': 'main',
                 'name': 'one_project_multi_path.xml'
             }
@@ -335,7 +335,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         data = self.demo_ssh_manifests_source
 
         # use a git/ssh url this time with an invalid key
-        data['source']['url'] = 'git@github.com:makohoek/demo-manifests.git'
+        data['source']['url'] = 'git@github.com:baylibre/demo-manifests.git'
 
         # This is just a private key randomly generated with
         # ssh-keygen. It should not have access to demo_ssh_manifests_source
@@ -413,7 +413,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
     # test that the `<remove-project>` tag is correctly handled
     # When rebuilding the Version string.
-    # See: https://github.com/makohoek/repo-resource/issues/36
+    # See: https://github.com/baylibre/repo-resource/issues/36
     def test_remove_project_version(self):
         data = self.remove_project_source
         instream = StringIO(json.dumps(data))
@@ -456,7 +456,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         instream = StringIO(json.dumps(data))
         versions = check.check(instream)
 
-        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"makohoek/demo-manifests.git\" path=\"rev\" remote=\"github\" revision=\"bd2eb4ba9b5581373ff276f619a88e248a2c77e7\"></project></manifest>'  # noqa: E501
+        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"baylibre/demo-manifests.git\" path=\"rev\" remote=\"github\" revision=\"c7dc94a569da81b212b18c48c80164dec3b23833"></project></manifest>'  # noqa: E501
 
         version = versions[0]['version']
         self.assertEqual(version, expected_version)
@@ -466,7 +466,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
         instream = StringIO(json.dumps(data))
         versions = check.check(instream)
 
-        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"makohoek/demo-manifests.git\" path=\"rev-1\" remote=\"github\" revision=\"0370566f0c65d8d7f03b78071b23a1e7480beac7\"></project><project name=\"makohoek/demo-manifests.git\" path=\"rev-2\" remote=\"github\" revision=\"524a18fc90ba5b4d298c4367fa4af959baf73a5f\"></project></manifest>'  # noqa: E501
+        expected_version = '<manifest><remote fetch=\"https://github.com/\" name=\"github\"></remote><project name=\"baylibre/demo-manifests.git\" path=\"rev-1\" remote=\"github\" revision=\"6e59039a2e3ef0ca712652fce79442e1304e558d\"></project><project name=\"baylibre/demo-manifests.git\" path=\"rev-2\" remote=\"github\" revision=\"516377d0124f8ecfc893ba4d6fa45c6a1ee24365\"></project></manifest>'  # noqa: E501
 
         version = versions[0]['version']
         self.assertEqual(version, expected_version)
