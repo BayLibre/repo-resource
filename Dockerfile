@@ -1,7 +1,7 @@
 FROM python:3-slim AS repo-resource
 
 RUN apt update \
- && apt install -y git procps \
+ && apt install -y git git-lfs procps \
  && apt upgrade -y \
  && apt autoremove \
  && rm -rf /var/lib/apt/lists/*

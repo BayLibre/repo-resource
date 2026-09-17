@@ -161,6 +161,7 @@ class SourceConfiguration(NamedTuple):
     jobs: int = 0
     check_jobs: int = DEFAULT_CHECK_JOBS
     rewrite: str = None
+    git_lfs: bool = False
 
 
 def source_config_from_payload(payload):
@@ -304,7 +305,7 @@ class Repo:
                     .release()
         return self
 
-    def init(self):
+    def init(self, git_lfs: bool = False):
         self.__change_to_workdir()
         try:
             # Google's repo prints a lot of information to stdout.
@@ -316,6 +317,7 @@ class Repo:
                     self.__url, '--manifest-name',
                     self.__name, '--no-tags',
                 ]
+                repo_cmd.append('--git-lfs' if git_lfs else '--no-git-lfs')
                 if self.__depth > 0:
                     repo_cmd.append('--depth={}'.format(self.__depth))
 

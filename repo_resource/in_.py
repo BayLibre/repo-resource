@@ -47,7 +47,7 @@ def in_(instream, dest_dir='.'):
         repo = common.Repo(config.url, config.revision,
                            config.name, config.depth, workdir=Path(dest_dir))
         repo.set_rewrite(config.rewrite) \
-            .init() \
+            .init(git_lfs=config.git_lfs) \
             .sync(requested_version, config.jobs) \
             .update_version()
     except Exception as e:
