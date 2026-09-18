@@ -8,7 +8,6 @@ import json
 from io import StringIO
 import unittest
 from pathlib import Path
-from timeit import default_timer as timer
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -386,30 +385,20 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
         self.assertEqual(len(versions), 0)
 
-    # test that we can specify an amount of jobs
-    # This is a little flaky because it depends on network
-    def test_jobs_limit(self):
+    def test_check_jobs_preserves_version(self):
         data = self.demo_multiple_aosp_device_source
 
-        data['source']['jobs'] = 24
-        start = timer()
+        data['source']['check_jobs'] = 24
         instream = StringIO(json.dumps(data))
-        check.check(instream)
-        end = timer()
-        fast_duration = end - start
+        parallel = check.check(instream)
 
         # call tearDown() manually to clear the CACHE dir
         self.tearDown()
 
-        data['source']['jobs'] = 1
-        start = timer()
+        data['source']['check_jobs'] = 1
         instream = StringIO(json.dumps(data))
-        check.check(instream)
-        end = timer()
-        slow_duration = end - start
-
-        print('fast: {} slow: {}'.format(fast_duration, slow_duration))
-        self.assertTrue(fast_duration < slow_duration)
+        sequential = check.check(instream)
+        self.assertEqual(parallel, sequential)
 
     # test that the `<remove-project>` tag is correctly handled
     # When rebuilding the Version string.
