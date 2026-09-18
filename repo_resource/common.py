@@ -9,9 +9,9 @@ Common functions for Android repo resource
 import atexit
 import logging
 import os
+import subprocess
 import sys
 import tempfile
-import warnings
 import git
 import re
 import xml.etree.ElementTree as ET
@@ -24,8 +24,6 @@ from multiprocessing import Pool
 from retrying import retry
 
 import ssh_agent_setup
-from repo import manifest_xml
-from repo import main as repo
 
 
 DEFAULT_CHECK_JOBS = 2
@@ -47,6 +45,7 @@ TAGS = [
   'linkfile',
   'remove-project',
   'include',
+  'repo-hooks',
   'superproject',
   'contactinfo'
 ]
@@ -161,6 +160,7 @@ class SourceConfiguration(NamedTuple):
     jobs: int = 0
     check_jobs: int = DEFAULT_CHECK_JOBS
     rewrite: str = None
+    git_lfs: bool = False
 
 
 def source_config_from_payload(payload):
@@ -237,7 +237,7 @@ class Version:
 
 class Repo:
     """
-    Wrapper around gitrepo to perform operations
+    Wrapper around the repo CLI to perform operations
     such as init/sync and manifest
     """
 
@@ -254,12 +254,6 @@ class Repo:
         self.__remote_revision = {}
         workdir.mkdir(parents=True, exist_ok=True)
 
-        # gitrepo from https://github.com/grouperenault/gitrepo
-        # is not python3.10 compatible, so ignore warnings
-        warnings.filterwarnings('ignore',
-                                category=DeprecationWarning,
-                                module='repo')
-
         # disable all terminal prompting
         # Repo is intended to be used in CI/automated systems so we
         # should never be "interactive"
@@ -272,6 +266,14 @@ class Repo:
 
     def __restore_oldpwd(self):
         os.chdir(self.__oldpwd)
+
+    def __run(self, args):
+        # Keep repo and hook output out of Concourse's JSON response and
+        # never let a subprocess consume the resource request on stdin.
+        subprocess.run(
+            ['/opt/git-repo/repo', *args], check=True,
+            stdin=subprocess.DEVNULL, stdout=sys.stderr, stderr=sys.stderr,
+        )
 
     def __add_remote_url(self, remote, url):
         self.__remote_url[remote] = url
@@ -289,22 +291,29 @@ class Repo:
         if matrix is None:
             return self
 
+        rewrites = {}
+        for from_url, to_url in matrix.items():
+            prefixes = rewrites.setdefault(to_url, [])
+            prefixes.append(from_url)
+            # Modern repo normalizes SCP-style remotes before invoking Git.
+            scp = re.match(r'^([^/:]+@[^/:]+):(.*)$', from_url)
+            if scp:
+                prefixes.append('ssh://{}/{}'.format(*scp.groups()))
+
         with redirect_stdout(sys.stderr), \
                 tempfile.TemporaryDirectory() as tempdir:
             gitrepo = git.Repo.init(tempdir)
             print("Applying rewrite rules")
-            for from_url, to_url in matrix.items():
-                print('{} -> {}'.format(from_url, to_url))
-                gitrepo \
-                    .config_writer(config_level='global') \
-                    .set_value(
-                        'url "{}"'.format(to_url),
-                        "insteadOf", from_url
-                    ) \
-                    .release()
+            with gitrepo.config_writer(config_level='global') as config:
+                for to_url, prefixes in rewrites.items():
+                    section = 'url "{}"'.format(to_url)
+                    for index, from_url in enumerate(dict.fromkeys(prefixes)):
+                        print('{} -> {}'.format(from_url, to_url))
+                        write = config.add_value if index else config.set_value
+                        write(section, 'insteadOf', from_url)
         return self
 
-    def init(self):
+    def init(self, git_lfs: bool = False):
         self.__change_to_workdir()
         try:
             # Google's repo prints a lot of information to stdout.
@@ -315,7 +324,9 @@ class Repo:
                     '--no-pager', 'init', '--quiet', '--manifest-url',
                     self.__url, '--manifest-name',
                     self.__name, '--no-tags',
+                    '--repo-url=/opt/git-repo', '--repo-rev=v2.67',
                 ]
+                repo_cmd.append('--git-lfs' if git_lfs else '--no-git-lfs')
                 if self.__depth > 0:
                     repo_cmd.append('--depth={}'.format(self.__depth))
 
@@ -325,7 +336,7 @@ class Repo:
                     )
 
                 print('Downloading manifest from {}'.format(self.__url))
-                repo._Main(repo_cmd)
+                self.__run(repo_cmd)
                 print('repo has been initialized in {}'.format(self.__workdir))
             return self
 
@@ -341,7 +352,7 @@ class Repo:
                 repo_cmd = [
                     '--no-pager', 'sync', '--verbose',
                     '--current-branch', '--detach', '--no-tags',
-                    '--fail-fast', '--force-sync'
+                    '--fail-fast', '--force-sync', '--verify'
                 ]
 
                 if jobs > 0:
@@ -352,7 +363,7 @@ class Repo:
                     version.to_file(tmp_manifest)
                     repo_cmd.append(
                         '--manifest-name={}'.format(tmp_manifest))
-                    repo._Main(repo_cmd)
+                    self.__run(repo_cmd)
                 if os.listdir(self.__workdir) == []:
                     raise Exception('Sync failed. Is manifest correct?')
             return self
@@ -383,21 +394,18 @@ class Repo:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_manifest = os.path.join(tmpdir, 'manifest_snapshot')
             self.__manifest_out(tmp_manifest)
-            xm = manifest_xml.XmlManifest(
-                os.path.join(self.__workdir, '.repo'), tmp_manifest)
-            for p in xm.projects:
-                metadata.append({'name': p.name, 'value': p.GetRevisionId()})
+            manifest = ET.parse(tmp_manifest)
+            for project in manifest.iter('project'):
+                metadata.append({'name': project.get('name'),
+                                 'value': project.get('revision')})
 
         return metadata
 
     def __manifest_out(self, filename):
         self.__change_to_workdir()
         try:
-            # XXX: We can't use redirect_stdout(StringIO) to keep the manifest
-            # snapshot into memory because repo._Main() seems to close
-            # the StringIO immediately after being called
             with redirect_stdout(sys.stderr):
-                repo._Main([
+                self.__run([
                     '--no-pager', 'manifest', '--revision-as-HEAD',
                     '--output-file',
                     os.path.join(self.__oldpwd / filename)

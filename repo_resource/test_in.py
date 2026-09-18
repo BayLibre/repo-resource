@@ -7,6 +7,8 @@
 import json
 from io import StringIO
 import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -17,6 +19,106 @@ from . import in_
 
 
 class TestIn(unittest.TestCase):
+    def _checkout_lfs_project(self, git_lfs, post_sync_hook=False,
+                              scp_remote=False):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            project = root / 'project'
+            manifests = root / 'manifests'
+
+            def git(path, *args):
+                return subprocess.check_output(
+                    ['git', '-C', str(path), *args],
+                    stderr=subprocess.STDOUT,
+                )
+
+            for path in (project, manifests):
+                path.mkdir()
+                git(path, 'init', '-b', 'main')
+                git(path, 'config', 'user.name', 'repo-resource')
+                git(path, 'config', 'user.email',
+                    'repo-resource@concourse-ci.org')
+
+            git(project, 'lfs', 'install', '--local')
+            git(project, 'lfs', 'track', '*.bin')
+            payload = b'\x00Git LFS test payload\n'
+            (project / 'payload.bin').write_bytes(payload)
+            git(project, 'add', '.gitattributes', 'payload.bin')
+            if post_sync_hook:
+                (project / 'post-sync.py').write_text(
+                    'def main(**kwargs):\n'
+                    '    from pathlib import Path\n'
+                    '    Path("post-sync-ran").write_text("hook output")\n'
+                    '    print("post-sync hook ran")\n'
+                )
+                git(project, 'add', 'post-sync.py')
+            git(project, 'commit', '-s', '-m', 'Add LFS fixture')
+
+            hook = (
+                '<repo-hooks in-project="project" enabled-list="post-sync"/>'
+                if post_sync_hook else ''
+            )
+            remote = 'git@fixture.invalid:repos/' if scp_remote else (
+                root.as_uri() + '/')
+            (manifests / 'default.xml').write_text(
+                '<manifest>\n'
+                f'<remote name="local" fetch="{remote}"/>\n'
+                '<default remote="local" revision="main"/>\n'
+                '<project name="project"/>\n'
+                f'{hook}\n'
+                '</manifest>\n'
+            )
+            git(manifests, 'add', 'default.xml')
+            git(manifests, 'commit', '-s', '-m', 'Add manifest fixture')
+
+            data = {'source': {
+                'url': manifests.as_uri(),
+                'revision': 'main',
+                'jobs': 1,
+                'check_jobs': 1,
+            }}
+            if git_lfs:
+                data['source']['git_lfs'] = True
+            if scp_remote:
+                data['source']['rewrite'] = {
+                    remote: root.as_uri() + '/',
+                    root.as_uri() + '/' + remote: root.as_uri() + '/',
+                }
+            data['version'] = check.check(StringIO(json.dumps(data)))[-1]
+            dest = root / 'checkout'
+            process = subprocess.run(
+                ['/opt/resource/in', str(dest)], input=json.dumps(data),
+                text=True, capture_output=True, check=True, timeout=60,
+            )
+            result = json.loads(process.stdout)
+            self.assertEqual(result['version'], data['version'])
+            if post_sync_hook:
+                self.assertEqual((dest / 'post-sync-ran').read_text(),
+                                 'hook output')
+                self.assertIn('post-sync hook ran', process.stderr)
+                self.assertNotIn('Do you want to allow', process.stderr)
+            contents = (dest / 'project' / 'payload.bin').read_bytes()
+            if git_lfs:
+                self.assertEqual(contents, payload)
+            else:
+                self.assertTrue(contents.startswith(
+                    b'version https://git-lfs.github.com/spec/v1\n'))
+
+    def test_git_lfs_downloads_objects(self):
+        self._checkout_lfs_project(git_lfs=True)
+
+    def test_git_lfs_downloads_objects_with_post_sync_hook(self):
+        self._checkout_lfs_project(git_lfs=True, post_sync_hook=True)
+
+    def test_post_sync_hook_runs_without_git_lfs(self):
+        self._checkout_lfs_project(git_lfs=False, post_sync_hook=True)
+
+    def test_scp_remote_rewrite(self):
+        self._checkout_lfs_project(git_lfs=True, scp_remote=True)
+
+    def test_git_lfs_defaults_to_pointer_files(self):
+        self._checkout_lfs_project(git_lfs=False)
+
     def setUp(self):
         self.demo_manifests_source = {
             'source': {

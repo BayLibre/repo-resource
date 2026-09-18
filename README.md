@@ -27,11 +27,17 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 * `depth`: *Optional.* shallow clone with a history truncated to the specified number of commits.
     Defaults to full git clone for each project.
 
+* `git_lfs`: *Optional.* Set to `true` to download Git LFS objects during `in`.
+    Defaults to `false`, leaving LFS pointer files in the checkout.
+    This uses `repo init --git-lfs` and does not require manifest hooks.
+
 * `jobs`: *Optional.* number of jobs to run in parallel (default: 0; based on number of CPU cores)
    Reduce this if you observe network errors.
 
 * `rewrite`: *Optional.* Any URL that starts with this value will be rewritten with the give value.
    Similar to git url insteadOf option.
+   SCP-style prefixes such as `git@github.com:` also match the `ssh://git@github.com/`
+   form produced by repo. Multiple prefixes may share the same destination.
     Example: rewrite http(s):// to git://
 
     ```yaml
@@ -81,6 +87,10 @@ The whole list of projects is returned as a "manifest version".
 Repo syncs the repo to the destination, and locks it down to a given manifest
 version.
 It will return the same given ref as version.
+
+The image bundles the official `repo` v2.67. Sync runs with `--verify`, so
+`post-sync` hooks declared by the manifest execute without an approval prompt.
+Repo and hook output is sent to stderr to preserve the resource's JSON response.
 
 ### `out`: No-op
 
