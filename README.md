@@ -30,6 +30,8 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 * `git_lfs`: *Optional.* Set to `true` to download Git LFS objects during `in`.
     Defaults to `false`, leaving LFS pointer files in the checkout.
     This uses `repo init --git-lfs` and does not require manifest hooks.
+    The bundled `gitrepo` 2.32.2 does not execute `post-sync` hooks; enable
+    this option for projects that otherwise use such a hook to fetch LFS files.
 
 * `jobs`: *Optional.* number of jobs to run in parallel (default: 0; based on number of CPU cores)
    Reduce this if you observe network errors.

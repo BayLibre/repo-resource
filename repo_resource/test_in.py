@@ -19,7 +19,7 @@ from . import in_
 
 
 class TestIn(unittest.TestCase):
-    def _checkout_lfs_project(self, git_lfs):
+    def _checkout_lfs_project(self, git_lfs, post_sync_hook=False):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             project = root / 'project'
@@ -43,13 +43,24 @@ class TestIn(unittest.TestCase):
             payload = b'\x00Git LFS test payload\n'
             (project / 'payload.bin').write_bytes(payload)
             git(project, 'add', '.gitattributes', 'payload.bin')
+            if post_sync_hook:
+                (project / 'post-sync.py').write_text(
+                    'def main(**kwargs):\n'
+                    '    raise RuntimeError("LFS must not need this hook")\n'
+                )
+                git(project, 'add', 'post-sync.py')
             git(project, 'commit', '-s', '-m', 'Add LFS fixture')
 
+            hook = (
+                '<repo-hooks in-project="project" enabled-list="post-sync"/>'
+                if post_sync_hook else ''
+            )
             (manifests / 'default.xml').write_text(
                 '<manifest>\n'
                 f'<remote name="local" fetch="{root.as_uri()}/"/>\n'
                 '<default remote="local" revision="main"/>\n'
                 '<project name="project"/>\n'
+                f'{hook}\n'
                 '</manifest>\n'
             )
             git(manifests, 'add', 'default.xml')
@@ -76,6 +87,9 @@ class TestIn(unittest.TestCase):
 
     def test_git_lfs_downloads_objects(self):
         self._checkout_lfs_project(git_lfs=True)
+
+    def test_git_lfs_downloads_objects_with_post_sync_hook(self):
+        self._checkout_lfs_project(git_lfs=True, post_sync_hook=True)
 
     def test_git_lfs_defaults_to_pointer_files(self):
         self._checkout_lfs_project(git_lfs=False)
