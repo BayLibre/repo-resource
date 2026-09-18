@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from timeit import default_timer as timer
 import shutil
-import repo
+import subprocess
 import xml.etree.ElementTree as ET
 
 from . import check
@@ -125,7 +125,7 @@ class TestCheck(unittest.TestCase):
             },
         }
         instream = StringIO(json.dumps(invalid_data))
-        with self.assertRaises(repo.error.GitError):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_unreachable_manifest(self):
@@ -136,7 +136,7 @@ class TestCheck(unittest.TestCase):
             },
         }
         instream = StringIO(json.dumps(unreachable_data))
-        with self.assertRaises(repo.error.GitError):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_rewrite_manifest(self):
@@ -148,7 +148,7 @@ class TestCheck(unittest.TestCase):
         unknown_revision_data = self.aosp_platform_source
         unknown_revision_data['source']['revision'] = 'unknown'
         instream = StringIO(json.dumps(unknown_revision_data))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_unknown_manifest_name(self):
@@ -156,7 +156,7 @@ class TestCheck(unittest.TestCase):
         unknown_manifest_data['source']['revision'] = 'master'
         unknown_manifest_data['source']['name'] = 'unknown.xml'
         instream = StringIO(json.dumps(unknown_manifest_data))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_default_rev_in_remote(self):
@@ -381,7 +381,7 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
         instream = StringIO(json.dumps(data))
         versions = []
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             versions = check.check(instream)
 
         self.assertEqual(len(versions), 0)
