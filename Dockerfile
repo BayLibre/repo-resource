@@ -6,6 +6,10 @@ RUN apt update \
  && apt autoremove \
  && rm -rf /var/lib/apt/lists/*
 
+RUN apt update \
+ && apt install -y git-lfs \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN git config --global user.email repo-resource@concourse-ci.org \
  && git config --global user.name repo-resource \
  && git config --global color.ui never

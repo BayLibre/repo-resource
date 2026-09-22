@@ -27,6 +27,10 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 * `depth`: *Optional.* shallow clone with a history truncated to the specified number of commits.
     Defaults to full git clone for each project.
 
+* `git_lfs`: *Optional.* Set to `true` to download Git LFS objects during `in`.
+    Defaults to `false`, leaving LFS pointer files in the checkout.
+    This uses `repo init --git-lfs` and does not require manifest hooks.
+
 * `jobs`: *Optional.* number of jobs to run in parallel (default: 0; based on number of CPU cores)
    Reduce this if you observe network errors.
 
