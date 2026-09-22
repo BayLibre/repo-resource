@@ -1,7 +1,7 @@
 FROM python:3-slim AS repo-resource
 
 RUN apt update \
- && apt install -y git procps \
+ && apt install -y git gnupg procps \
  && apt upgrade -y \
  && apt autoremove \
  && rm -rf /var/lib/apt/lists/*
@@ -11,6 +11,11 @@ RUN git config --global user.email repo-resource@concourse-ci.org \
  && git config --global color.ui never
 
 COPY ssh_config /root/.ssh/config
+
+ARG REPO_VERSION=v2.67
+RUN git clone --single-branch --branch "$REPO_VERSION" \
+      https://gerrit.googlesource.com/git-repo /opt/git-repo \
+ && git -C /opt/git-repo rev-parse HEAD > /opt/repo-revision
 
 COPY repo_resource/requirements.txt /opt/resource/requirements.txt
 RUN pip install -r opt/resource/requirements.txt
