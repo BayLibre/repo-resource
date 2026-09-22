@@ -32,6 +32,8 @@ Track changes in a [repo](https://gerrit.googlesource.com/git-repo/+/master/#rep
 
 * `rewrite`: *Optional.* Any URL that starts with this value will be rewritten with the give value.
    Similar to git url insteadOf option.
+   SCP-style prefixes such as `git@github.com:` also match the `ssh://git@github.com/`
+   form produced by repo. Multiple prefixes may share the same destination.
     Example: rewrite http(s):// to git://
 
     ```yaml
@@ -82,6 +84,10 @@ Repo syncs the repo to the destination, and locks it down to a given manifest
 version.
 It will return the same given ref as version.
 
+The image bundles the official `repo` (v2.67 by default). Sync runs with `--verify`, so
+`post-sync` hooks declared by the manifest execute without an approval prompt.
+Repo and hook output is sent to stderr to preserve the resource's JSON response.
+
 ### `out`: No-op
 
 Out is not implemented.
@@ -94,6 +100,15 @@ Out is not implemented.
 ```
 make
 ```
+
+Select the bundled repo version with the Docker build argument:
+
+```sh
+docker build --build-arg REPO_VERSION=v2.67 -t repo-resource:latest .
+```
+
+The resolved commit is recorded in the image and used by `repo init`, so
+resource checks and gets use the same bundled revision.
 
 ### Publish to docker hub
 

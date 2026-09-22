@@ -8,9 +8,8 @@ import json
 from io import StringIO
 import unittest
 from pathlib import Path
-from timeit import default_timer as timer
 import shutil
-import repo
+import subprocess
 import xml.etree.ElementTree as ET
 
 from . import check
@@ -125,7 +124,7 @@ class TestCheck(unittest.TestCase):
             },
         }
         instream = StringIO(json.dumps(invalid_data))
-        with self.assertRaises(repo.error.GitError):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_unreachable_manifest(self):
@@ -136,7 +135,7 @@ class TestCheck(unittest.TestCase):
             },
         }
         instream = StringIO(json.dumps(unreachable_data))
-        with self.assertRaises(repo.error.GitError):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_rewrite_manifest(self):
@@ -148,7 +147,7 @@ class TestCheck(unittest.TestCase):
         unknown_revision_data = self.aosp_platform_source
         unknown_revision_data['source']['revision'] = 'unknown'
         instream = StringIO(json.dumps(unknown_revision_data))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_unknown_manifest_name(self):
@@ -156,7 +155,7 @@ class TestCheck(unittest.TestCase):
         unknown_manifest_data['source']['revision'] = 'master'
         unknown_manifest_data['source']['name'] = 'unknown.xml'
         instream = StringIO(json.dumps(unknown_manifest_data))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             check.check(instream)
 
     def test_default_rev_in_remote(self):
@@ -381,35 +380,25 @@ YDbuygyhlR8C8AAAAObWFrb2hvZWtAZ3Jvb3QBAgMEBQ==
 
         instream = StringIO(json.dumps(data))
         versions = []
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(subprocess.CalledProcessError):
             versions = check.check(instream)
 
         self.assertEqual(len(versions), 0)
 
-    # test that we can specify an amount of jobs
-    # This is a little flaky because it depends on network
-    def test_jobs_limit(self):
+    def test_check_jobs_preserves_version(self):
         data = self.demo_multiple_aosp_device_source
 
-        data['source']['jobs'] = 24
-        start = timer()
+        data['source']['check_jobs'] = 24
         instream = StringIO(json.dumps(data))
-        check.check(instream)
-        end = timer()
-        fast_duration = end - start
+        parallel = check.check(instream)
 
         # call tearDown() manually to clear the CACHE dir
         self.tearDown()
 
-        data['source']['jobs'] = 1
-        start = timer()
+        data['source']['check_jobs'] = 1
         instream = StringIO(json.dumps(data))
-        check.check(instream)
-        end = timer()
-        slow_duration = end - start
-
-        print('fast: {} slow: {}'.format(fast_duration, slow_duration))
-        self.assertTrue(fast_duration < slow_duration)
+        sequential = check.check(instream)
+        self.assertEqual(parallel, sequential)
 
     # test that the `<remove-project>` tag is correctly handled
     # When rebuilding the Version string.
